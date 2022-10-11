@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+   <!-- Cameras -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="camera" value="camera1" />
+    <arg name="serial_no" value="142422250596" />
+    <arg name="align_depth" value="true" />
+    <arg name="filters" value="pointcloud"/>
+    <arg name="initial_reset" value="true"/>
+  </include>
+
+</launch>
