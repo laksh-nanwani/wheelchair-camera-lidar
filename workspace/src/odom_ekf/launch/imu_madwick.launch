@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+<!--arg "gyro_topic" value="camera/gyro/sample"/-->
+<!--arg "accel_topic" value="camera/accel/sample"/-->
+<arg name="imu_data_topic" value="camera/imu"/>
+
+<remap from="imu/data_raw" to="$(arg imu_data_topic)"/>
+<node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_node" output="screen" respawn="false" >
+    
+    <param name="use_mag" value="false"/>
+    <param name="publish_tf" value="false"/>
+    <param name="world_frame" value="enu"/>
+</node>
+
+</launch>
