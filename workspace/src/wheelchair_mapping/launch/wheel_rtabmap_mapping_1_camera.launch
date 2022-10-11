@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <!-- Multi-cameras demo with 2 D400 cameras -->
+
+  <!-- Choose visualization -->
+  <arg name="rviz"       default="false" />
+  <arg name="rtabmapviz" default="true" />
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair_real.xacro'" />
+  <arg name="multi_robot_name" default=""/>
+  <param name="robot_description" command="$(arg urdf_file)" />
+  
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="24.0" />
+    <!-- <param name="tf_prefix" value="$(arg multi_robot_name)"/> -->
+  </node> 
+
+  <!-- Frames: Cameras are placed at 90 degrees, clockwise -->
+  <!--<node pkg="tf" type="static_transform_publisher" name="base_to_camera1_tf"
+      args="0.0 0.0 0.0 0.0 0.0 0.0 /base_link /camera1_link 100" />
+  <node pkg="tf" type="static_transform_publisher" name="base_to_camera2_tf"
+      args="-0.1325 -0.1975 0.0 -1.570796327 0.0 0.0 /base_link /camera2_link 100" />-->
+
+   <!-- sync rgb/depth images per camera -->
+   <!--group ns="camera1">
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager1" args="manager"/>
+    <node pkg="nodelet" type="nodelet" name="rgbd_sync1" args="load rtabmap_ros/rgbd_sync nodelet_manager1">
+      <remap from="rgb/image"       to="color/image_raw"/>
+      <remap from="depth/image"     to="aligned_depth_to_color/image_raw"/>
+      <remap from="rgb/camera_info" to="color/camera_info"/>
+      <param name="approx"          value="false"/>
+    </node>
+   </group-->
+
+   <group ns="camera2">
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager2" args="manager"/>
+    <node pkg="nodelet" type="nodelet" name="rgbd_sync2" args="load rtabmap_ros/rgbd_sync nodelet_manager2">
+      <remap from="rgb/image"       to="color/image_raw"/>
+      <remap from="depth/image"     to="aligned_depth_to_color/image_raw"/>
+      <remap from="rgb/camera_info" to="color/camera_info"/>
+      <param name="approx"          value="false"/>
+    </node>
+   </group>
+
+  <group ns="rtabmap">
+
+    <!-- Odometry -->
+    <!--<node pkg="rtabmap_ros" type="rgbd_odometry" name="rgbd_odometry" output="screen">
+      <remap from="rgbd_image0"       to="/camera1/rgbd_image"/>
+      <remap from="rgbd_image1"       to="/camera2/rgbd_image"/>
+
+      <param name="subscribe_rgbd"           type="bool"   value="true"/>
+      <param name="frame_id"                 type="string" value="base_link"/>
+      <param name="rgbd_cameras"             type="int"    value="2"/>
+      <param name="Vis/EstimationType"       type="string" value="0"/>  <should be 0 for multi-cameras >
+    </node-->
+
+    <!-- Visual SLAM (robot side) -->
+    <!-- args: "delete_db_on_start" and "udebug" -->
+    <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="--delete_db_on_start">
+      <param name="subscribe_depth"  type="bool"   value="false"/>
+      <param name="subscribe_rgbd"   type="bool"   value="true"/>
+      <param name="rgbd_cameras"     type="int"    value="1"/>
+      <param name="frame_id"         type="string" value="base_link"/>
+      <param name="gen_scan"         type="bool"   value="true"/>
+      <param name="map_negative_poses_ignored" type="bool"   value="false"/>        <!-- refresh grid map even if we are not moving-->
+      <param name="map_negative_scan_empty_ray_tracing" type="bool" value="false"/> <!-- don't fill empty space between the generated scans-->
+
+      <remap from="rgbd_image"       to="/camera2/rgbd_image"/>
+
+      <param name="visual_odometry" type="bool" value="false"/>
+      <!--param name="odom_topic" type="string" value="/odom"/-->
+      <remap from="odom"       to="/odom"/>
+
+      <param name="Grid/FromDepth"     type="string" value="false"/>
+      <param name="Vis/EstimationType" type="string" value="0"/> <!-- should be 0 for multi-cameras -->
+
+      <param name="approx_sync" type="bool" value="true"/>
+
+      <!--param name="Grid/MaxGroundHeight" type="string" value="0.05"/-->       <!-- all points below 20 cm are ground -->
+      <!--param name="Grid/MaxObstacleHeight" type="string" value="2"/-->       <!-- all points above 20 cm and below 2 m are obstacles -->
+      <!--param name="Grid/NormalsSegmentation" type="string" value="false"/--> <!-- Use simple passthrough to filter the ground instead of normals segmentation -->
+
+    </node>
+
+    <!-- Visualisation RTAB-Map -->
+    <node if="$(arg rtabmapviz)" pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen">
+      <param name="subscribe_depth"  type="bool"   value="false"/>
+      <param name="subscribe_rgbd"   type="bool"   value="true"/>
+      <param name="subscribe_odom_info" type="bool"   value="true"/>
+      <param name="frame_id"            type="string" value="base_link"/>
+      <param name="rgbd_cameras"       type="int"    value="1"/>
+
+      <remap from="rgbd_image"       to="/camera2/rgbd_image"/>
+      <remap from="odom"       to="/odom"/>
+      
+    </node>
+
+  </group>
+
+  <!-- Visualization RVIZ -->
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="rviz" args="-d $(find rtabmap_ros)/launch/config/rgbd.rviz"/>
+
+</launch>

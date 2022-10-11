@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair_real.xacro'" />
+  <arg name="multi_robot_name" default=""/>
+  <param name="robot_description" command="$(arg urdf_file)" />
+  
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="24.0" />
+    <!-- <param name="tf_prefix" value="$(arg multi_robot_name)"/> -->
+  </node>
+
+    <!--Starting rtabmap mapping-->
+  <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+	<arg name="args" value="--delete_db_on_start"/>
+	<param name="frame_id"                    type="string" value="camera_link"/>
+	<param name="Odom/ResetCountdown" type="string" value="1"/>
+	<param name="Rtabmap/StartNewMapOnLoopClosure"  type="bool" value="true"/>
+        <param name="Mem/DepthAsMask"  type="bool" value="false"/>
+	<param name="Vis/DepthAsMask"  type="bool" value="false"/>
+	
+	<param name="subscribe_depth" value="true"/>
+
+	<arg name="subscribe_scan_cloud" value="false"/>
+	<arg name="scan_cloud_topic" value="/camera/depth/color/points"/>
+
+        <arg name="rgb_topic" value="/camera/color/image_raw"/>
+        <arg name="camera_info_topic" value="/camera/color/camera_info"/>
+
+        <!--arg name="odom_topic" value="/odom"/-->
+	<arg name="depth_topic" value="/camera/aligned_depth_to_color/image_raw"/>
+        <arg name="depth_camera_info_topic" value="/camera/aligned_depth_to_color/camera_info"/>
+        
+	<arg name="visual_odometry" value="false"/>
+        <arg name="odom_topic" value="/odom"/>
+	<!--arg name="subscribe_scan" value ="false"/-->
+	<!--arg name="scan_topic" value="/scan"/-->
+
+	<arg name="approx_sync" value="true"/> 
+        <arg name="rtabmapviz" value="true"/>
+
+  </include>
+  
+</launch>

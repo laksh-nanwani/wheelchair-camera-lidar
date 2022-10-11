@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+<arg name="remap_odom" value="false"/>
+
+  <group ns="camera">
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager"/>
+    <node pkg="nodelet" type="nodelet" name="rgbd_sync" args="load rtabmap_ros/rgbd_sync nodelet_manager">
+      <remap from="rgb/image"       to="color/image_raw"/>
+      <remap from="depth/image"     to="aligned_depth_to_color/image_raw"/>
+      <remap from="rgb/camera_info" to="color/camera_info"/>
+      <param name="approx"          value="false"/>
+    </node>
+  </group>
+
+  <group ns="rtabmap">
+
+    <!-- Odometry -->
+    <node pkg="rtabmap_ros" type="rgbd_odometry" name="rgbd_odometry" output="screen">
+      <remap from="rgbd_image"       to="/camera/rgbd_image"/>
+      <remap if="$(arg remap_odom)" from="odom" to="/odom"/>
+
+      <param name="subscribe_rgbd"           type="bool"   value="true"/>
+      <param name="frame_id"                 type="string" value="base_link"/>
+      <param name="rgbd_cameras"             type="int"    value="1"/>
+      <param name="Vis/EstimationType"       type="string" value="1"/>  <!--should be 0 for multi-cameras/-->
+    </node>
+
+  </group>
+
+</launch>

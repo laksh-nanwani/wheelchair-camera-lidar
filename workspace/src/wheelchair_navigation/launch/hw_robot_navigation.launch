@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<launch>
+  <arg default="$(find wheelchair_cartographer)/maps/lab_rrc.yaml" name="map_file" />
+  <arg default="true" name="open_rviz" />
+  <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic" />
+  <arg default="/odom" name="odom_topic" />
+  <arg default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair.xacro'" name="urdf_file" />
+  <param command="$(arg urdf_file)" name="robot_description" />
+
+
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="50.0" />
+  </node>
+
+  <node args="$(arg map_file)" name="map_server" pkg="map_server" type="map_server" />
+
+
+
+  <node name="amcl" pkg="amcl" type="amcl">
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/amcl.yaml" />
+    <remap from="scan" to="scan_filtered" />
+ </node>
+
+
+
+  <node name="locomotor" output="screen" pkg="locomove_base" respawn="false" type="move_base">
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/costmap_common_params.yaml" ns="global_costmap" />
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/costmap_common_params.yaml" ns="local_costmap" />
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/local_costmap_params.yaml" />
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/global_costmap_params.yaml" />
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/move_base_params.yaml" />
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/dwb_local_planner_params.yaml" />
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/global_planner_params.yaml" />
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/prohibition_areas.yaml" ns="global_costmap/costmap_prohibition_layer" />
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/prohibition_areas.yaml" ns="local_costmap/costmap_prohibition_layer" />
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)" />
+    <remap from="odom" to="$(arg odom_topic)" />
+  </node>
+
+
+
+
+  <group if="$(arg open_rviz)">
+    <node args="-d $(find wheelchair_navigation)/rviz/wheelchair_navigation.rviz" name="rviz" pkg="rviz" required="true" type="rviz" />
+  </group>
+
+</launch>
