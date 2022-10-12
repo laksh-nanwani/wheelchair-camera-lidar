@@ -118,7 +118,7 @@ sensor_msgs::LaserScanPtr DepthImageToLaserScan::convert_msg(const sensor_msgs::
   scan_msg->time_increment = 0.0;
   scan_msg->scan_time = scan_time_;
   scan_msg->range_min = range_min_;
-  scan_msg->range_max = range_max_;
+  scan_msg->range_max = std::numeric_limits<float>::infinity();
 
   // Check scan_height vs image_height
   if(scan_height_/2 > cam_model_.cy() || scan_height_/2 > depth_msg->height - cam_model_.cy()){
@@ -129,7 +129,7 @@ sensor_msgs::LaserScanPtr DepthImageToLaserScan::convert_msg(const sensor_msgs::
 
   // Calculate and fill the ranges
   const uint32_t ranges_size = depth_msg->width;
-  scan_msg->ranges.assign(ranges_size, std::numeric_limits<float>::quiet_NaN());
+  scan_msg->ranges.assign(ranges_size, std::numeric_limits<float>::infinity());
 
   if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1)
   {
