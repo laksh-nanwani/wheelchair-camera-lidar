@@ -23,7 +23,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: LaserScan
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -104,6 +104,10 @@ Visualization Manager:
           Value: false
         lidar_base_rod:
           Value: false
+        map:
+          Value: true
+        odom:
+          Value: true
         rod1:
           Value: false
         rod2:
@@ -115,7 +119,38 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        map:
+          odom:
+            base_link:
+              camera_bottom_screw_frame:
+                camera_link:
+                  camera_aligned_depth_to_color_frame:
+                    camera_color_optical_frame:
+                      {}
+                  camera_color_frame:
+                    {}
+                  camera_depth_frame:
+                    camera_depth_optical_frame:
+                      {}
+                    camera_left_ir_frame:
+                      camera_left_ir_optical_frame:
+                        {}
+                    camera_right_ir_frame:
+                      camera_right_ir_optical_frame:
+                        {}
+              chassis:
+                camera_base_rod:
+                  {}
+                caster1:
+                  {}
+                caster2:
+                  {}
+                lidar_base_rod:
+                  {}
+                rod1:
+                  {}
+                rod2:
+                  {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -275,7 +310,7 @@ Visualization Manager:
           Topic: /locomotor/DWBLocalPlanner/local_plan
           Unreliable: false
           Value: true
-      Enabled: true
+      Enabled: false
       Name: Local Map
     - Alpha: 1
       Arrow Length: 0.07999999821186066
@@ -283,7 +318,7 @@ Visualization Manager:
       Axes Radius: 0.009999999776482582
       Class: rviz/PoseArray
       Color: 0; 192; 0
-      Enabled: false
+      Enabled: true
       Head Length: 0.07000000029802322
       Head Radius: 0.029999999329447746
       Name: Amcl Particles
@@ -293,7 +328,7 @@ Visualization Manager:
       Shape: Arrow (Flat)
       Topic: /particlecloud
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
@@ -330,7 +365,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
+      Enabled: true
       Head Length: 0.10000000149011612
       Head Radius: 0.10000000149011612
       Name: PoseWithCovariance
@@ -340,7 +375,7 @@ Visualization Manager:
       Shape: Arrow
       Topic: /amcl_pose
       Unreliable: false
-      Value: false
+      Value: true
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -358,7 +393,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
+      Enabled: true
       Keep: 1
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -375,7 +410,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /odom
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
@@ -433,10 +468,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 97.7496109008789
+      Scale: 79.4884262084961
       Target Frame: <Fixed Frame>
-      X: 3.9382996559143066
-      Y: 0.12686759233474731
+      X: 0.9580701589584351
+      Y: -0.029781993478536606
     Saved: ~
 Window Geometry:
   Displays:

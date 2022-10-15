@@ -12,7 +12,7 @@ DWBLocalPlanner:
   yaw_goal_tolerance: 0.524 # 30 degree = 0.524 rad
 
   # Acceleration Limits
-  acc_lim_x: 0.1 #0.5 (29/11 acceleration caluse remapped according to controller manager)
+  acc_lim_x: 0.05 #0.5 (29/11 acceleration caluse remapped according to controller manager)
   acc_lim_y: 0.0
   acc_lim_trans: 0.3 #0.5 (29/11 acceleration caluse remapped according to controller manager) 
   acc_lim_theta: 1.4285 #2.3809 (29/11 acceleration caluse remapped according to controller manager) 
@@ -20,11 +20,11 @@ DWBLocalPlanner:
   decel_lim_x: -0.1  #-1.8 (29/11 acceleration caluse remapped according to controller manager) 
 
   # Velocity Limits
-  max_vel_theta: 0.2 #4.76 #0.5
-  min_vel_theta: 0.0
-  max_speed_theta: 0.2
-  min_speed_theta: 0.1
-  max_speed_xy: 0.2
+  max_vel_theta: 0.75 #4.76 #0.5
+  ## min_vel_theta: 0.0
+  ## max_speed_theta: 0.2
+  min_speed_theta: 0.00
+  max_speed_xy: 0.02
   min_speed_xy: 0.0
   max_vel_x: 0.2
   min_vel_x: 0.0 #-0.1 (29/11 backdriven enabled) 
@@ -46,8 +46,8 @@ DWBLocalPlanner:
   # linear_granularity: 0.25
   # angular_sim_granularity: 0.25
   # angular_granularity: 12
-  vx_samples: 20
-  vy_samples: 1
+  vx_samples: 40
+  vy_samples: 0
   vtheta_samples: 40 # 20
 
   prune_plan: true

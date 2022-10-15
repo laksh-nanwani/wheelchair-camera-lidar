@@ -18,7 +18,7 @@
   <node args="$(arg map_file)" name="map_server" pkg="map_server" type="map_server" />
   
 
- <include file="$(find wheelchair_nav_cameras)/launch/amcl.launch" />
+ <include file="$(find wheelchair_nav_cameras)/launch/amcl_parth.launch" />
 
   <node name="locomotor" output="screen" pkg="locomove_base" respawn="false" type="move_base">
     <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/costmap_common_params.yaml" ns="global_costmap" />
