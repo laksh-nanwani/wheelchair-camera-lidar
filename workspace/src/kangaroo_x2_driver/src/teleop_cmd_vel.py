@@ -36,10 +36,10 @@ else:
   import tty, termios
 
 WHEELCHAIR_MAX_LIN_VEL = 2 		#Max velocity for Wheelchair_V(m/s)
-WHEELCHAIR_MAX_ANG_VEL = 0.5
+WHEELCHAIR_MAX_ANG_VEL = 2
 
 LIN_VEL_STEP_SIZE = 0.005 #0.1 m/s
-ANG_VEL_STEP_SIZE = 0.15 #0.1 m/s
+ANG_VEL_STEP_SIZE = 0.25 #0.1 m/s
 
 msg = """
 Control Your Wheelchair!
