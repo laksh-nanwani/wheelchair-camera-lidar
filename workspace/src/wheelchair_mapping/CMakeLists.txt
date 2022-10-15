@@ -195,7 +195,7 @@ find_package(catkin REQUIRED COMPONENTS
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 catkin_package(
-  INCLUDE_DIRS include
+  # INCLUDE_DIRS include
   CATKIN_DEPENDS geometry_msgs roscpp std_msgs tf roslaunch sensor_msgs rospy
 )
 
@@ -203,7 +203,7 @@ catkin_package(
 # Build
 ################################################################################
 include_directories(
-  include
+  # include
   ${catkin_INCLUDE_DIRS}
 )
 

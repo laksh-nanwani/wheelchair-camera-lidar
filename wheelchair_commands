@@ -1,0 +1,17 @@
+
+cd ..
+source .bashrc
+cd wheelchair
+source install_isolated/setup.bash
+
+roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=142422250596 serial_no_camera2:=115422250059
+
+rosrun rosserial_python serial_node.py /dev/ttyACM0 _baud:=115200
+
+rosrun wheelchair_navigation odom_publisher
+
+rosrun wheelchair_simulation teleop.py
+
+catkin_make_isolated --install --use-ninja
+
+catkin_make_isolated --install --use-ninja --pkg package_name

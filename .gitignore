@@ -1,0 +1,7 @@
+# Folders / Directories
+workspace/devel
+workspace/build
+rtabmap_databases
+
+# Files
+workspace/.catkin_workspace
