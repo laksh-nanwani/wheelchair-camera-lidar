@@ -125,11 +125,11 @@ Visualization Manager:
               camera_bottom_screw_frame:
                 camera_link:
                   camera_aligned_depth_to_color_frame:
-                    camera_color_optical_frame:
-                      {}
-                  camera_color_frame:
                     {}
                   camera_depth_frame:
+                    camera_color_frame:
+                      camera_color_optical_frame:
+                        {}
                     camera_depth_optical_frame:
                       {}
                     camera_left_ir_frame:
@@ -263,7 +263,7 @@ Visualization Manager:
           Topic: /locomotor/DWBLocalPlanner/global_plan
           Unreliable: false
           Value: true
-      Enabled: false
+      Enabled: true
       Name: Global Map
     - Class: rviz/Group
       Displays:
@@ -310,7 +310,7 @@ Visualization Manager:
           Topic: /locomotor/DWBLocalPlanner/local_plan
           Unreliable: false
           Value: true
-      Enabled: false
+      Enabled: true
       Name: Local Map
     - Alpha: 1
       Arrow Length: 0.07999999821186066
