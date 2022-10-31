@@ -39,7 +39,7 @@ class LangNav():
         name_pub=rospy.Publisher("/human_name",String,queue_size=10)
         
         self.lookup_table = {
-			"table 1": [-2.113, 1.328, 0.0, 0.0, 0.0, 1.0, 0.0],        # Laksh's table
+			"table 1": [-2.113, 1.328, 0.0, 0.0, 0.0, 1.0, 0.0],        # Laksh's table ([p.x, p.y, p.z, o.x, o.y, o.z, o.w])
             "table 2": [2.937, 0.695, 0.0, 0.0, 0.0, 1.0, 0.0],	        # Jaski's table
 			"table 3": [4.676, 0.752, 0.0, 0.0, 0.0, 1.0, 0.0],		    # Neel's table
             "table 4": [6.460, 0.482, 0.0, 0.0, 0.0, 1.0, 0.0],	        # Bhanu's table

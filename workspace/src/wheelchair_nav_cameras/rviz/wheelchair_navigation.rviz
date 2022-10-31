@@ -3,8 +3,10 @@ Panels:
     Help Height: 85
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
-      Splitter Ratio: 0.5
+      Expanded:
+        - /Global Map1/Costmap1
+        - /Local Map1/Costmap1
+      Splitter Ratio: 0.4928774833679199
     Tree Height: 1109
   - Class: rviz/Selection
     Name: Selection
@@ -65,52 +67,10 @@ Visualization Manager:
       Value: false
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_link:
-          Value: true
-        camera_aligned_depth_to_color_frame:
-          Value: false
-        camera_base_rod:
-          Value: false
-        camera_bottom_screw_frame:
-          Value: false
-        camera_color_frame:
-          Value: false
-        camera_color_optical_frame:
-          Value: false
-        camera_depth_frame:
-          Value: false
-        camera_depth_optical_frame:
-          Value: false
-        camera_left_ir_frame:
-          Value: false
-        camera_left_ir_optical_frame:
-          Value: false
-        camera_link:
-          Value: false
-        camera_right_ir_frame:
-          Value: false
-        camera_right_ir_optical_frame:
-          Value: false
-        caster1:
-          Value: false
-        caster2:
-          Value: false
-        chassis:
-          Value: false
-        lidar_base_rod:
-          Value: false
-        map:
-          Value: true
-        odom:
-          Value: true
-        rod1:
-          Value: false
-        rod2:
-          Value: false
       Marker Alpha: 1
       Marker Scale: 1
       Name: TF
@@ -118,40 +78,9 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            base_link:
-              camera_bottom_screw_frame:
-                camera_link:
-                  camera_aligned_depth_to_color_frame:
-                    {}
-                  camera_depth_frame:
-                    camera_color_frame:
-                      camera_color_optical_frame:
-                        {}
-                    camera_depth_optical_frame:
-                      {}
-                    camera_left_ir_frame:
-                      camera_left_ir_optical_frame:
-                        {}
-                    camera_right_ir_frame:
-                      camera_right_ir_optical_frame:
-                        {}
-              chassis:
-                camera_base_rod:
-                  {}
-                caster1:
-                  {}
-                caster2:
-                  {}
-                lidar_base_rod:
-                  {}
-                rod1:
-                  {}
-                rod2:
-                  {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -206,7 +135,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 0; 0; 0
-      Enabled: false
+      Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -225,7 +154,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /locomotor/global_plan
       Unreliable: false
-      Value: false
+      Value: true
     - Class: rviz/Group
       Displays:
         - Alpha: 0.699999988079071
@@ -262,7 +191,7 @@ Visualization Manager:
           Topic: /locomotor/DWBLocalPlanner/global_plan
           Unreliable: false
           Value: true
-      Enabled: false
+      Enabled: true
       Name: Global Map
     - Class: rviz/Group
       Displays:
@@ -277,7 +206,7 @@ Visualization Manager:
           Value: true
         - Alpha: 0.699999988079071
           Class: rviz/Map
-          Color Scheme: costmap
+          Color Scheme: map
           Draw Behind: false
           Enabled: true
           Name: Costmap
@@ -309,7 +238,7 @@ Visualization Manager:
           Topic: /locomotor/DWBLocalPlanner/local_plan
           Unreliable: false
           Value: true
-      Enabled: false
+      Enabled: true
       Name: Local Map
     - Alpha: 1
       Arrow Length: 0.07999999821186066
@@ -317,7 +246,7 @@ Visualization Manager:
       Axes Radius: 0.009999999776482582
       Class: rviz/PoseArray
       Color: 0; 192; 0
-      Enabled: false
+      Enabled: true
       Head Length: 0.07000000029802322
       Head Radius: 0.029999999329447746
       Name: Amcl Particles
@@ -327,13 +256,13 @@ Visualization Manager:
       Shape: Arrow (Flat)
       Topic: /particlecloud
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: false
+      Enabled: true
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Goal
@@ -343,7 +272,7 @@ Visualization Manager:
       Shape: Arrow
       Topic: /move_base_simple/goal
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
@@ -392,7 +321,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
+      Enabled: true
       Keep: 1
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -409,7 +338,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /odom
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
@@ -457,7 +386,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -9.450798034667969
+      Angle: -9.460794448852539
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -467,10 +396,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 97.75804901123047
-      Target Frame: base_link
-      X: 0.12697850167751312
-      Y: -0.027918146923184395
+      Scale: 81.42138671875
+      Target Frame: <Fixed Frame>
+      X: 1.0897502899169922
+      Y: 0.4084674119949341
     Saved: ~
 Window Geometry:
   Displays:

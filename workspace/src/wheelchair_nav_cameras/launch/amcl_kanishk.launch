@@ -15,8 +15,8 @@
     <param name="kld_err"                   value="0.01"/>  <!--max error between the true distribution and the estimated distribution-->
     <param name="kld_z"                     value="0.99"/>  <!--Upper standard normal quantile for (1 - p), where p is the probability that the error on the estimated distrubition will be less than kld_err.-->
     
-    <param name="update_min_d"              value="0.20"/>  <!-- 10 cm Translational movement required before perform in g a filter update-->
-    <param name="update_min_a"              value="0.5"/>  <!--10 degrees movement required before perform in g a filter update-->
+    <param name="update_min_d"              value="0.10"/>  <!-- 10 cm Translational movement required before perform in g a filter update-->
+    <param name="update_min_a"              value="0.17"/>  <!--10 degrees movement required before perform in g a filter update-->
     
     <param name="resample_interval"         value="1"/>     <!--Number of filter updates required before resampling-->
     <param name="transform_tolerance"       value="1.0"/>   <!--Time with which to post-date the transform that is published, to indicate that this transform is valid into the future-->
