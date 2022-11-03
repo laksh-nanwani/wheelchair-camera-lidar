@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-  <arg default="$(find wheelchair_cartographer)/maps/lab_rrc.yaml" name="map_file" />
+  <arg default="$(find wheelchair_mapping)/maps/my_map3.yaml" name="map_file" />
   <arg default="true" name="open_rviz" />
   <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic" />
   <arg default="/odom" name="odom_topic" />
-  <arg default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair.xacro'" name="urdf_file" />
+  <arg default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair_lidar_camera.xacro'" name="urdf_file" />
   <param command="$(arg urdf_file)" name="robot_description" />
 
 

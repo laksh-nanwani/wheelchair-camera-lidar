@@ -170,7 +170,7 @@
              origin_rpy="0 0 0" origin_xyz="-0.23 0 0.650"
              parent="chassis" child="camera_base_rod" />
 
-     <!--xacro:f_link_box name="lidar_base_rod"
+     <xacro:f_link_box name="lidar_base_rod"
                  origin_rpy="0 0 0" origin_xyz="0 0 0"
                  mass="0.45164"
                  ixx="0.100000005621" ixy="0.100000001310" ixz="0.100000001649"
@@ -183,24 +183,24 @@
              type="fixed"
              axis_xyz="0 0 0"
              origin_rpy="0 0 0" origin_xyz="0.23 0 -0.15"
-             parent="chassis" child="lidar_base_rod" /-->
+             parent="chassis" child="lidar_base_rod" />
 
 <!--Lidar-->
-  <!--xacro:m_link_cylinder name="rplidar"
+  <xacro:m_link_cylinder name="rplidar"
                    origin_rpy="0 0 0" origin_xyz="0 0 0"
                    mass="0.10441"
                    ixx="0.1000000042" ixy="0" ixz="0"
                    iyy="0.1000000042" iyz="0"
                    izz="0.1000000040"
                    material="black"
-                   filename="package://wheelchair_description/meshes/rplidar.dae" scale="1 1 1"/-->
+                   filename="package://wheelchair_description/meshes/rplidar.dae" scale="1 1 1"/>
 
 <!-- joint between chassis and lidar -->
-      <!--xacro:f_joint name="chassis_to_rplidar"
+      <xacro:f_joint name="chassis_to_rplidar"
                type="fixed"
                axis_xyz="0 0 0"
                origin_rpy="0 0 3.14" origin_xyz="0.23 0 -0.15"
-               parent="chassis" child="rplidar" /-->
+               parent="chassis" child="rplidar" />
 
 <!--Real_Sense-->
 
