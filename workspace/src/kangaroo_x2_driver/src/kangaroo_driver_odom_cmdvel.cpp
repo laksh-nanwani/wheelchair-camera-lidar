@@ -300,9 +300,9 @@ void kangaroo::JointStateCB( const ros::WallTimerEvent &e )
 		// get_position and get_velocity might throw an exception if either
 		//   request or the read fails
 		msg->position[0] = get_parameter((unsigned char)128, '3', (unsigned char)1);	// position for ch1
-		// msg->velocity[0] = get_parameter((unsigned char)128, '3', (unsigned char)2);	// velocity for ch1
+		msg->velocity[0] = get_parameter((unsigned char)128, '3', (unsigned char)2);	// velocity for ch1
 		msg->position[1] = get_parameter((unsigned char)128, '4', (unsigned char)1);	// position for ch2
-		// msg->velocity[1] = get_parameter((unsigned char)128, '4', (unsigned char)2);	// velocity for ch2
+		msg->velocity[1] = get_parameter((unsigned char)128, '4', (unsigned char)2);	// velocity for ch2
 
 		// ROS_INFO("inital: %f, %f, %f, %f", msg->position[0], msg->velocity[0], msg->position[1], msg->velocity[1]);
 		// if (msg->velocity[0] > 0)
@@ -488,14 +488,16 @@ inline double kangaroo::encoder_lines_to_drive( int encoder_lines  )
 {
 	// "logger : drive_cb : lines : => drive : "
 	// ROS_INFO("logger : drive_cb : lines : %d  => drive : %d", encoder_lines, int(encoder_lines * 1005 / 16384));
-	return ((encoder_lines * 1.005) / (2*4*16384));
+	return ((encoder_lines * 1.005) / (2 * 4 * 16384));
+	// return ((encoder_lines * 1.005) / (2*4*4096)); // November: Everything stopped working, is it electro-magnetic interference? God knows!
 }
 
 inline double kangaroo::encoder_lines_to_turn( int encoder_lines  )
 {
 	// "logger : turn_cb : lines :  => turn : "
 	// ROS_INFO("logger : turn_cb : lines : %d  => turn : %d", encoder_lines, int(encoder_lines * 360 / 28416));
-	return (float(encoder_lines * 360) / float(2*4*28416));
+	return (float(encoder_lines * 360) / float(2 * 4 * 28416 * RAD_2_DEG));
+	// return (float(encoder_lines * 360) / float(2*4*7104)); // November: Everything stopped working, is it electro-magnetic interference? God knows!
 }
 
 //inline double kangaroo::encoder_lines_to_meters( int encoder_lines )
@@ -509,7 +511,8 @@ inline int kangaroo::drive_to_encoder_lines( double linear )
 	// "logger : drive : drive :  => lines : "
 	// ROS_INFO("%f", linear);
 	// ROS_INFO("logger : drive : drive : %f => lines %d", linear, int(linear *  16384 / 1005));
-	return ((linear * 4 * 16384) / 2 * 1.005) * 100; // m to cm * real to quadrature;
+	return ((linear * 4 * 16384) / 2 * 1.005); // m to cm * real to quadrature;
+	// return ((linear * 4 * 4096) / 2 * 1.005) * 100; // November: Everything stopped working, is it electro-magnetic interference? God knows!
 }
 
 inline int kangaroo::turn_to_encoder_lines( double angular )
@@ -518,6 +521,7 @@ inline int kangaroo::turn_to_encoder_lines( double angular )
 	// ROS_INFO("%f", angular);
 	// ROS_INFO("logger : turn : turn %f => lines %d", angular, int(angular *  28416 / 360));
 	return ((angular * 2 * 4 * 28416) / 360) * RAD_2_DEG;  // real to quadrature * radians to degrees
+	// return ((angular * 2 * 4 * 7104) / 360) * RAD_2_DEG;  // November: Everything stopped working, is it electro-magnetic interference? God knows!
 }
 
 //inline int kangaroo::meters_to_encoder_lines( double meters )
