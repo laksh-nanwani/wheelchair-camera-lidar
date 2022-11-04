@@ -18,27 +18,27 @@
 
 kangaroo::kangaroo( ros::NodeHandle &_nh, ros::NodeHandle &_nh_priv ) :
 	port( "" ),
-	ch1_joint_name( "3" ),
-	ch2_joint_name( "4" ),
+	ch1_joint_name( "1" ),
+	ch2_joint_name( "2" ),
 	fd( -1 ),
 	nh( _nh ),
 	nh_priv( _nh_priv ),
-	// encoder_lines_per_revolution(3200),
-	hz(50) // prev : 50
-	//diameter_of_wheels(.117475)
+	encoder_lines_per_revolution(65536),
+	hz(50), // prev : 50
+	diameter_of_wheels(0.32)
 	//msg(new sensor_msgs::JointState)
 {
 	ROS_INFO( "Initializing" );
 	nh_priv.param( "port", port, (std::string)"/dev/ttyACM0" );
-	nh_priv.param( "ch1_joint_name", ch1_joint_name, (std::string)"3" );
-	nh_priv.param( "ch2_joint_name", ch2_joint_name, (std::string)"4" );
+	nh_priv.param( "ch1_joint_name", ch1_joint_name, (std::string)"1" );
+	nh_priv.param( "ch2_joint_name", ch2_joint_name, (std::string)"2" );
 
 	// the rate we want to set the timer at
 	double rate = (double)1/(double)hz;
 
 	poll_timer = nh.createWallTimer( ros::WallDuration(rate), &kangaroo::JointStateCB, this );
 
-	//circumference_of_wheels = diameter_of_wheels * M_PI;
+	circumference_of_wheels = diameter_of_wheels * M_PI;
 }
 
 bool kangaroo::open()
@@ -200,8 +200,8 @@ bool kangaroo::is_open( ) const
 
 // 	// lock the output_mutex
 // 	boost::mutex::scoped_lock output_lock(output_mutex);
-// 	set_channel_speed(channel_1_speed, 128, '3');
-// 	set_channel_speed(channel_2_speed, 128, '4');
+// 	set_channel_speed(channel_1_speed, 128, '1');
+// 	set_channel_speed(channel_2_speed, 128, '2');
 // }
 
 void kangaroo::SendVelToKangaroo(const geometry_msgs::Twist &msg)
@@ -214,20 +214,20 @@ void kangaroo::SendVelToKangaroo(const geometry_msgs::Twist &msg)
 	// ROS_INFO("logger : drive : drive : %f => lines %d", channel_1_speed, int(channel_1_speed *  16384 / 1005));
 	// ROS_INFO("logger : turn : turn : %f => lines %d", channel_2_speed, int(channel_2_speed *  28416 / 360));
 
-	linear_vel = drive_to_encoder_lines(linear_vel);
-	angular_vel = turn_to_encoder_lines(angular_vel);
+	linear_vel = meters_to_encoder_lines(linear_vel);
+	angular_vel = meters_to_encoder_lines(angular_vel);
 
 	// lock the output_mutex
 	boost::mutex::scoped_lock output_lock(output_mutex);
-	set_channel_speed(linear_vel, 128, '3');
-	set_channel_speed(angular_vel, 128, '4');
+	set_channel_speed(linear_vel, 128, '1');
+	set_channel_speed(angular_vel, 128, '2');
 }
 
 bool kangaroo::send_start_signals(unsigned char address)
 {
 	// send the start signal to channel 1
 	unsigned char buffer[7];
-	int num_of_bytes_1 = write_kangaroo_start_command(address, '3', buffer);
+	int num_of_bytes_1 = write_kangaroo_start_command(address, '1', buffer);
 	if (0 > write(fd, buffer, num_of_bytes_1))
 	{
 		ROS_ERROR("Failed to update channel 1: %s", strerror(errno));
@@ -236,7 +236,7 @@ bool kangaroo::send_start_signals(unsigned char address)
 	}
 
 	// send the start signal to channel 2
-	int num_of_bytes_2 = write_kangaroo_start_command(address, '4', buffer);
+	int num_of_bytes_2 = write_kangaroo_start_command(address, '2', buffer);
 	if (0 > write(fd, buffer, num_of_bytes_2))
 	{
 		ROS_ERROR("Failed to update channel 2: %s", strerror(errno));
@@ -299,10 +299,10 @@ void kangaroo::JointStateCB( const ros::WallTimerEvent &e )
 
 		// get_position and get_velocity might throw an exception if either
 		//   request or the read fails
-		msg->position[0] = get_parameter((unsigned char)128, '3', (unsigned char)1);	// position for ch1
-		msg->velocity[0] = get_parameter((unsigned char)128, '3', (unsigned char)2);	// velocity for ch1
-		msg->position[1] = get_parameter((unsigned char)128, '4', (unsigned char)1);	// position for ch2
-		msg->velocity[1] = get_parameter((unsigned char)128, '4', (unsigned char)2);	// velocity for ch2
+		msg->position[0] = get_parameter((unsigned char)128, '1', (unsigned char)1);	// position for ch1
+		msg->velocity[0] = get_parameter((unsigned char)128, '1', (unsigned char)2);	// velocity for ch1
+		msg->position[1] = get_parameter((unsigned char)128, '2', (unsigned char)1);	// position for ch2
+		msg->velocity[1] = get_parameter((unsigned char)128, '2', (unsigned char)2);	// velocity for ch2
 
 		// ROS_INFO("inital: %f, %f, %f, %f", msg->position[0], msg->velocity[0], msg->position[1], msg->velocity[1]);
 		// if (msg->velocity[0] > 0)
@@ -311,10 +311,10 @@ void kangaroo::JointStateCB( const ros::WallTimerEvent &e )
 		// if (msg->velocity[1] > 0)
 			// ROS_INFO("logger : turn_cb : lines : %f  => turn : %f", msg->velocity[1], msg->velocity[1] * 360 / (28416*4));
 	
-		msg->position[0] = encoder_lines_to_drive(msg->position[0]);
-		msg->velocity[0] = encoder_lines_to_drive(msg->velocity[0]); // cm to m * quadrature to real
-		msg->position[1] = encoder_lines_to_turn(msg->position[1]);
-		msg->velocity[1] = encoder_lines_to_turn(msg->velocity[1]); // quadrature to real
+		msg->position[0] = encoder_lines_to_meters(msg->position[0]);
+		msg->velocity[0] = encoder_lines_to_meters(msg->velocity[0]); // cm to m * quadrature to real
+		msg->position[1] = encoder_lines_to_meters(msg->position[1]);
+		msg->velocity[1] = encoder_lines_to_meters(msg->velocity[1]); // quadrature to real
 
 		// ROS_INFO("final: %f, %f, %f, %f", msg->position[0], msg->velocity[0], msg->position[1], msg->velocity[1]);
 
@@ -500,10 +500,10 @@ inline double kangaroo::encoder_lines_to_turn( int encoder_lines  )
 	// return (float(encoder_lines * 360) / float(2*4*7104)); // November: Everything stopped working, is it electro-magnetic interference? God knows!
 }
 
-//inline double kangaroo::encoder_lines_to_meters( int encoder_lines )
-//{
-// 	return (encoder_lines * circumference_of_wheels / encoder_lines_per_revolution);
-//}
+inline double kangaroo::encoder_lines_to_meters( int encoder_lines )
+{
+	return (encoder_lines * circumference_of_wheels / encoder_lines_per_revolution);
+}
 
 // TODO : This is for Individual Mode - make similar converters for Mixed Mode -> Drive Turn to lines 
 inline int kangaroo::drive_to_encoder_lines( double linear )
@@ -524,10 +524,10 @@ inline int kangaroo::turn_to_encoder_lines( double angular )
 	// return ((angular * 2 * 4 * 7104) / 360) * RAD_2_DEG;  // November: Everything stopped working, is it electro-magnetic interference? God knows!
 }
 
-//inline int kangaroo::meters_to_encoder_lines( double meters )
-//{
-//	return (meters * encoder_lines_per_revolution / circumference_of_wheels);
-//}
+inline int kangaroo::meters_to_encoder_lines( double meters )
+{
+	return (meters * encoder_lines_per_revolution / circumference_of_wheels);
+}
 
 unsigned char kangaroo::read_one_byte(bool& ok)
 {

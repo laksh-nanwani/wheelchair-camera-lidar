@@ -38,8 +38,8 @@ else:
 WHEELCHAIR_MAX_LIN_VEL = 2 		#Max velocity for Wheelchair_V(m/s)
 WHEELCHAIR_MAX_ANG_VEL = 2
 
-LIN_VEL_STEP_SIZE = 0.1 #0.1 m/s
-ANG_VEL_STEP_SIZE = 0.25 #0.1 m/s
+LIN_VEL_STEP_SIZE = 0.2 #0.1 m/s
+ANG_VEL_STEP_SIZE = 0.2 #0.1 m/s
 
 msg = """
 Control Your Wheelchair!
@@ -48,8 +48,8 @@ Moving around:
         w
    a    s    d
         x
-w/x : increase/decrease linear velocity (Wheelchair : ~ 0.22)
-a/d : increase/decrease angular velocity (Wheelchair : ~ 2.84)
+w/x : increase/decrease linear velocity (Wheelchair : ~ 0.05)
+a/d : increase/decrease angular velocity (Wheelchair : ~ 0.05)
 space key, s : force stop
 CTRL-C to quit
 """

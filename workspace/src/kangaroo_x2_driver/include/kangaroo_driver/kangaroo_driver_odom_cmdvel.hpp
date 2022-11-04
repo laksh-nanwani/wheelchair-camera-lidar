@@ -68,7 +68,14 @@ private:
 	boost::mutex output_mutex;
 	boost::mutex input_mutex;
 
+	int encoder_lines_per_revolution;
+	double diameter_of_wheels;
+	double circumference_of_wheels;
+
 	// unit conversion
+	double encoder_lines_to_meters( int encoder_lines );
+	int meters_to_encoder_lines( double linear );
+
 	double encoder_lines_to_drive( int encoder_lines );
 	int drive_to_encoder_lines( double linear );
 
