@@ -7,8 +7,8 @@ from nav_msgs.msg import Odometry
 import math
 from tf.transformations import euler_from_quaternion
 
-LINEAR_THRESHOLD = 0.1
-ANGULAR_THRESHOLD = 0.05
+LINEAR_THRESHOLD = 0.05
+ANGULAR_THRESHOLD = 0.02
 
 LINEAR_VEL = 0.2
 ANGULAR_VEL = 0.3
@@ -56,9 +56,10 @@ class Benchmark:
 		target_reached = False # False
 		tic = time.time()
 		while (not target_reached):
-			err = math.sqrt((self.robot_pose_x - target_x)**2 + (self.robot_pose_y - target_y)**2)
-			rospy.loginfo(f"Pose :: x : {self.robot_pose_x:.2f} m ; y : {self.robot_pose_y:.2f} m ; heading : {self.robot_heading_angle:.2f} rad  :: Error : {err:.2f}")
+			dist_travelled = math.sqrt((self.robot_pose_x - start_x)**2 + (self.robot_pose_y - start_y)**2)
+			rospy.loginfo(f"Pose :: x : {self.robot_pose_x:.2f} m ; y : {self.robot_pose_y:.2f} m ; heading : {self.robot_heading_angle:.2f} rad  :: Dist : {dist_travelled:.2f}")
 
+			err = distance - dist_travelled
 			if err < LINEAR_THRESHOLD:
 				target_reached = True
 				continue
@@ -124,9 +125,10 @@ class Benchmark:
 		
 	def benchmarking_loop(self):
 		while not rospy.is_shutdown():
-			self.move_forward(5)
-			self.rotate(180)
-
+			self.move_forward(1)
+			time.sleep(1)
+			self.rotate(3.14)
+			time.sleep(1)
 
 if __name__ == "__main__":
 	rospy.init_node("benchmark", anonymous=False)
@@ -134,6 +136,7 @@ if __name__ == "__main__":
 	benchmark = Benchmark()
 	rospy.on_shutdown(benchmark.emergency_stop)
 	time.sleep(2)
+	benchmark.benchmarking_loop()
 	# benchmark.move_forward(2)
-	benchmark.rotate(-3.14)
+	# benchmark.rotate(-3.14)
 	# rospy.spin()
