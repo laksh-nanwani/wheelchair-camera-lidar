@@ -1,13 +1,13 @@
 scan_filter_chain:
-# - name: angle
-#   type: laser_filters/LaserScanAngularBoundsFilter
-#   params:
-#     lower_angle: 1.57
-#     upper_angle: 4.71
-- name: range
-  type: laser_filters/LaserScanRangeFilter
+- name: angle
+  type: laser_filters/LaserScanAngularBoundsFilter
   params:
-    lower_threshold: 0.1
-    upper_threshold: 4 # .inf
-    upper_replacement_value: 8 # .inf
-    lower_replacement_value: 0 # .inf 
+    lower_angle: 0.2
+    upper_angle: 3.12
+    #- name: range
+    #  type: laser_filters/LaserScanRangeFilter
+    #  params:
+    #    lower_threshold: 0.1
+    #    upper_threshold: 4 # .inf
+    #    upper_replacement_value: 8 # .inf
+    #    lower_replacement_value: 0 # .inf 
