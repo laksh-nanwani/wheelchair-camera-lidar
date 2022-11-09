@@ -129,6 +129,62 @@ class Benchmark:
 			time.sleep(1)
 			self.rotate(3.14)
 			time.sleep(1)
+	
+	def square(self):
+		# while not rospy.is_shutdown():
+			self.move_forward(2)
+			time.sleep(1)
+			self.rotate(1.57)
+			time.sleep(1)
+			self.move_forward(2)
+			time.sleep(1)
+			self.rotate(1.57)
+			time.sleep(1)
+			self.move_forward(2)
+			time.sleep(1)
+			self.rotate(1.57)
+			time.sleep(1)
+			self.move_forward(2)
+			time.sleep(1)
+			self.rotate(1.57)
+			time.sleep(1)
+
+	def quarter_arc(self, distance):
+		start_x = self.robot_pose_x
+		start_y = self.robot_pose_y
+		start_theta = self.robot_heading_angle
+
+		target_x = start_x + (2**0.5) * distance * math.sin(math.pi/4 - start_theta)
+		target_y = start_y + (2**0.5) * distance * math.cos(math.pi/4 - start_theta)
+		target_theta = start_theta + math.pi
+
+		rospy.loginfo("move_forward")
+		rospy.loginfo(f"start  :: x : {start_x:.2f} m ; y : {start_y:.2f} m ; heading : {start_theta:.2f} rad")
+		rospy.loginfo(f"target :: x : {target_x:.2f} m ; y : {target_y:.2f} m ; heading : {target_theta:.2f} rad")
+		rospy.loginfo("--- starting ---")
+
+		target_reached = False # False
+		tic = time.time()
+		while (not target_reached):
+			rospy.loginfo(f"Pose :: x : {self.robot_pose_x:.2f} m ; y : {self.robot_pose_y:.2f} m ; heading : {self.robot_heading_angle:.2f} rad")
+
+			err_d = ((target_x - self.robot_pose_x)**2 + (target_y - self.robot_pose_y)**2)**0.5
+			err_a = target_theta - self.robot_heading_angle
+			if err_d < LINEAR_THRESHOLD or err_a < ANGULAR_THRESHOLD:
+				target_reached = True
+				continue
+
+
+			# TODO: pid using err, for now its gonna be 1 or 0
+			linear = LINEAR_VEL
+			angular = LINEAR_VEL/2
+			self.control_robot(linear, angular)
+			time.sleep(0.1)
+
+		toc = time.time()  
+		self.control_robot(0, 0)
+		rospy.loginfo("--- target reached ---")
+		rospy.loginfo(f"time_taken : {toc - tic:.2f}")
 
 if __name__ == "__main__":
 	rospy.init_node("benchmark", anonymous=False)
@@ -136,7 +192,8 @@ if __name__ == "__main__":
 	benchmark = Benchmark()
 	rospy.on_shutdown(benchmark.emergency_stop)
 	time.sleep(2)
-	benchmark.benchmarking_loop()
+	benchmark.quarter_arc(2)
+	# benchmark.square()
 	# benchmark.move_forward(2)
 	# benchmark.rotate(-3.14)
 	# rospy.spin()
