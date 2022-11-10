@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  <arg default="$(find wheelchair_cartographer)/maps/lab_rrc.yaml" name="map_file" />
+  <arg default="true" name="open_rviz" />
+  <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic" />
+  <arg default="/odom" name="odom_topic" />
+
+  <node args="$(arg map_file)" name="map_server" pkg="map_server" type="map_server" />
+
+
+
+  <node name="amcl" pkg="amcl" type="amcl">
+    <rosparam command="load" file="$(find wheelchair_navigation)/param/amcl.yaml" />
+    <remap from="scan" to="scan_filtered" />
+ </node>
+
+
+  <group if="$(arg open_rviz)">
+    <node args="-d $(find wheelchair_navigation)/rviz/wheelchair_navigation.rviz" name="rviz" pkg="rviz" required="true" type="rviz" />
+  </group>
+
+</launch>
