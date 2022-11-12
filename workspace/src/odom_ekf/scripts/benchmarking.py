@@ -10,7 +10,7 @@ from tf.transformations import euler_from_quaternion
 LINEAR_THRESHOLD = 0.05
 ANGULAR_THRESHOLD = 0.02
 
-LINEAR_VEL = 0.2
+LINEAR_VEL = 0.1
 ANGULAR_VEL = 0.3
 
 class Benchmark:
@@ -192,8 +192,8 @@ if __name__ == "__main__":
 	benchmark = Benchmark()
 	rospy.on_shutdown(benchmark.emergency_stop)
 	time.sleep(2)
-	benchmark.quarter_arc(2)
+	# benchmark.quarter_arc(2)
 	# benchmark.square()
-	# benchmark.move_forward(2)
+	benchmark.move_forward(1)
 	# benchmark.rotate(-3.14)
 	# rospy.spin()
