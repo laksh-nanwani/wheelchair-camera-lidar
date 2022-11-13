@@ -23,22 +23,22 @@ DWBLocalPlanner:
   max_vel_theta: 0.75 #4.76 #0.5
   ## min_vel_theta: 0.0
   ## max_speed_theta: 0.2
-  min_speed_theta: -0.75
-  max_speed_xy: 0.2
+  min_speed_theta: 0
+  max_speed_xy: 0.5
   min_speed_xy: -0.15
-  max_vel_x: 0.2
+  max_vel_x: 0.5
   min_vel_x: -0.15 #-0.1 (29/11 backdriven enabled) 
   max_vel_y: 0.0
   min_vel_y: 0.0
 
   # Path Simulation
-  sim_time: 30.0 # 2.0
+  sim_time: 2.0 # 2.0
   # sim_period: 0.05
   #If discretize_by_time is false, then sim_granularity is the maximum amount of distance between
   # *  two successive points on the trajectory, and angular_sim_granularity is the maximum amount of
   # *  angular distance between two successive points.
   discretize_by_time: true
-  time_granularity: 0.05
+  time_granularity: 0.2
 
   # unnecessary parameters - not used in our setup 
   # TODO : Clean all parameter files

@@ -1,10 +1,10 @@
 global_costmap:
   # Frame
   global_frame: map
-  robot_base_frame: base_link
+  robot_base_frame: chassis
 
   # Update Frequency
-  update_frequency: 10.0
+  update_frequency: 5.0
   publish_frequency: 5.0
 
   # Map Type
