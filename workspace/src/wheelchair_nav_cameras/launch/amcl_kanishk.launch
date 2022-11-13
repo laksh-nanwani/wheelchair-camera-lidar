@@ -39,10 +39,10 @@
     <param name="laser_max_range"           value="25.0"/>  <!--Maximum scan range to be considered; -1.0 will cause the laser's reported maximum range to be used.-->
     <param name="laser_max_beams"           value="60"/>    <!--How many evenly-spaced beams in each scan to be used when updating the filter-->
     
-    <param name="laser_z_hit"               value="0.5"/>  <!--Mixture weight for the z_hit part of the model.-->
+    <param name="laser_z_hit"               value="0.9"/>  <!--Mixture weight for the z_hit part of the model.-->
     <param name="laser_z_short"             value="0.05"/>   <!--Mixture weight for the z_short part of the model.-->
     <param name="laser_z_max"               value="0.05"/>  <!--Mixture weight for the z_max part of the model.-->
-    <param name="laser_z_rand"              value="0.5"/>  <!--Mixture weight for the z_rand part of the model.-->
+    <param name="laser_z_rand"              value="0.1"/>  <!--Mixture weight for the z_rand part of the model.-->
     <param name="laser_sigma_hit"           value="0.2"/>   <!--Standard deviation for Gaussian model used in z_hit part of the model.-->
     <param name="laser_lambda_short"        value="0.1"/>   <!--Exponential decay parameter for z_short part of model.-->
     <param name="laser_likelihood_max_dist" value="2.0"/>   <!--Maximum distance to do obstacle inflation on map, for use in likelihood_field model-->
