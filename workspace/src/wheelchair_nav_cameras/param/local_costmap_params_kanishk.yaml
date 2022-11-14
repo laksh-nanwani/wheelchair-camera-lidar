@@ -19,7 +19,7 @@ local_costmap:
 
   inflation_layer:
       enabled:              true
-      cost_scaling_factor:  0.0 # exp(-1.0 * cost_scaling_factor * (distance_from_obstacle – inscribed_radius)) * (costmap_2d::INSCRIBED_INFLATED_OBSTACLE - 1) 
+      cost_scaling_factor:  10.0 # exp(-1.0 * cost_scaling_factor * (distance_from_obstacle – inscribed_radius)) * (costmap_2d::INSCRIBED_INFLATED_OBSTACLE - 1) 
       inflation_radius:     0.2 # max. distance from an obstacle at which costs are incurred for planning paths.
 
 #  social_navigation_layer:
