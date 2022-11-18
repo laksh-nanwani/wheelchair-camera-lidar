@@ -6,8 +6,6 @@ Panels:
       Expanded:
         - /TF1
         - /TF1/Frames1
-        - /Amcl Particles1
-        - /Odometry1
         - /Odometry1/Shape1
       Splitter Ratio: 0.5
     Tree Height: 1109
@@ -27,7 +25,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -74,48 +72,6 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_link:
-          Value: true
-        camera_base_rod:
-          Value: false
-        camera_bottom_screw_frame:
-          Value: false
-        camera_color_frame:
-          Value: false
-        camera_color_optical_frame:
-          Value: false
-        camera_depth_frame:
-          Value: false
-        camera_depth_optical_frame:
-          Value: false
-        camera_left_ir_frame:
-          Value: false
-        camera_left_ir_optical_frame:
-          Value: false
-        camera_link:
-          Value: false
-        camera_right_ir_frame:
-          Value: false
-        camera_right_ir_optical_frame:
-          Value: false
-        caster1:
-          Value: false
-        caster2:
-          Value: false
-        chassis:
-          Value: true
-        lidar_base_rod:
-          Value: false
-        map:
-          Value: true
-        odom:
-          Value: true
-        rod1:
-          Value: false
-        rod2:
-          Value: false
-        rplidar:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 1
       Name: TF
@@ -123,38 +79,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            base_link:
-              camera_bottom_screw_frame:
-                camera_link:
-                  camera_depth_frame:
-                    camera_color_frame:
-                      camera_color_optical_frame:
-                        {}
-                    camera_depth_optical_frame:
-                      {}
-                    camera_left_ir_frame:
-                      camera_left_ir_optical_frame:
-                        {}
-                    camera_right_ir_frame:
-                      camera_right_ir_optical_frame:
-                        {}
-              chassis:
-                camera_base_rod:
-                  {}
-                caster1:
-                  {}
-                caster2:
-                  {}
-                lidar_base_rod:
-                  {}
-                rod1:
-                  {}
-                rod2:
-                  {}
-                rplidar:
-                  {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -211,7 +136,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 0; 0; 0
-      Enabled: false
+      Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -230,7 +155,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /locomotor/global_plan
       Unreliable: false
-      Value: false
+      Value: true
     - Class: rviz/Group
       Displays:
         - Alpha: 0.699999988079071
@@ -267,7 +192,7 @@ Visualization Manager:
           Topic: /locomotor/DWBLocalPlanner/global_plan
           Unreliable: false
           Value: true
-      Enabled: false
+      Enabled: true
       Name: Global Map
     - Class: rviz/Group
       Displays:
@@ -338,7 +263,7 @@ Visualization Manager:
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: false
+      Enabled: true
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Goal
@@ -348,7 +273,7 @@ Visualization Manager:
       Shape: Arrow
       Topic: /move_base_simple/goal
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
