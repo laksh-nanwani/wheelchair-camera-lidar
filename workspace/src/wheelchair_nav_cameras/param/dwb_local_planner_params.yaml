@@ -9,7 +9,7 @@ DWBLocalPlanner:
   goal_checker_name: dwb_plugins::StoppedGoalChecker
   # Goal Tolerence
   xy_goal_tolerance: 0.1
-  yaw_goal_tolerance: 1.572 # 0.524 # 30 degree = 0.524 rad
+  yaw_goal_tolerance: 0.524 # 30 degree = 0.524 rad
 
   # Acceleration Limits
   acc_lim_x: 0.1 #0.5 (29/11 acceleration caluse remapped according to controller manager)
