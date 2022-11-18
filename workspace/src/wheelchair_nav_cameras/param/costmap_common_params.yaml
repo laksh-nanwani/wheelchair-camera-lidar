@@ -1,7 +1,7 @@
 
 map_type: costmap
 
-robot_base_frame: base_link
+robot_base_frame: chassis
 
 transform_tolerance: 1.0
 
@@ -19,5 +19,5 @@ obstacle_layer:
    raytrace_range: 3.8
 
 # Footprint
-footprint: [[-0.4,-0.325], [0.4,-0.325], [0.4,0.325], [-0.4,0.325]]
-footprint_padding: 0.15
+footprint: [[-0.4,-0.3], [0.4,-0.3], [0.4,0.3], [-0.4,0.3]]
+footprint_padding: 0.02

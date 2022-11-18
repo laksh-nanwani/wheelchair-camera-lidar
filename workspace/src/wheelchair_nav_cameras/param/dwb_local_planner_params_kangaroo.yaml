@@ -12,9 +12,9 @@ DWBLocalPlanner:
   yaw_goal_tolerance: 0.524 # 30 degree = 0.524 rad
 
   # Acceleration Limits
-  acc_lim_x: 0.05 #0.5 (29/11 acceleration caluse remapped according to controller manager)
+  acc_lim_x: 0.1 #0.5 (29/11 acceleration caluse remapped according to controller manager)
   acc_lim_y: 0.0
-  acc_lim_trans: 0.3 #0.5 (29/11 acceleration caluse remapped according to controller manager) 
+  acc_lim_trans: 0.1 #0.5 (29/11 acceleration caluse remapped according to controller manager) 
   acc_lim_theta: 1.4285 #2.3809 (29/11 acceleration caluse remapped according to controller manager) 
   decel_lim_theta: -1.4285  #-2.3809 (29/11 acceleration caluse remapped according to controller manager) 
   decel_lim_x: -0.1  #-1.8 (29/11 acceleration caluse remapped according to controller manager) 
@@ -24,16 +24,16 @@ DWBLocalPlanner:
   ## min_vel_theta: 0.0
   ## max_speed_theta: 0.2
   min_speed_theta: 0.00
-  max_speed_xy: 0.02
+  max_speed_xy: 0.5
   min_speed_xy: 0.0
-  max_vel_x: 0.2
+  max_vel_x: 1.0
   min_vel_x: 0.0 #-0.1 (29/11 backdriven enabled) 
   max_vel_y: 0.0
   min_vel_y: 0.0
 
   # Path Simulation
   sim_time: 3.0 # 2.0
-  sim_period: 0.05
+  sim_period: 0.2
   #If discretize_by_time is false, then sim_granularity is the maximum amount of distance between
   # *  two successive points on the trajectory, and angular_sim_granularity is the maximum amount of
   # *  angular distance between two successive points.
@@ -46,7 +46,7 @@ DWBLocalPlanner:
   # linear_granularity: 0.25
   # angular_sim_granularity: 0.25
   # angular_granularity: 12
-  vx_samples: 40
+  vx_samples: 20
   vy_samples: 0
   vtheta_samples: 40 # 20
 
@@ -57,7 +57,7 @@ DWBLocalPlanner:
   PathDist:
     scale: 80.0 #72.0 # reduce this
   ObstacleFootprint:
-    scale: 2.0
+    scale: 50.0
   Oscillation:
     scale: 100.0
   RotateToGoal:

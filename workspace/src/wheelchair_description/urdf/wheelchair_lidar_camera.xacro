@@ -199,7 +199,7 @@
       <xacro:f_joint name="chassis_to_rplidar"
                type="fixed"
                axis_xyz="0 0 0"
-               origin_rpy="0 0 3.14" origin_xyz="0.23 0 -0.15"
+               origin_rpy="0 0 -1.57" origin_xyz="0.23 0 -0.15"
                parent="chassis" child="rplidar" />
 
 <!--Real_Sense-->
