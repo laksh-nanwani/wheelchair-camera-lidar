@@ -6,7 +6,7 @@ Panels:
       Expanded:
         - /Odometry1/Shape1
       Splitter Ratio: 0.5
-    Tree Height: 1109
+    Tree Height: 349
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -469,9 +469,9 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Scale: 99.24117279052734
-      Target Frame: base_link
-      X: 5.67834997177124
-      Y: 0.9908245801925659
+      Target Frame: <Fixed Frame>
+      X: 3.2755627632141113
+      Y: 0.4784865081310272
     Saved: ~
 Window Geometry:
   Displays:
