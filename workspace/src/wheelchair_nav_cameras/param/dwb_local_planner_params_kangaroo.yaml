@@ -46,9 +46,9 @@ DWBLocalPlanner:
   # linear_granularity: 0.25
   # angular_sim_granularity: 0.25
   # angular_granularity: 12
-  vx_samples: 50
+  vx_samples: 40
   vy_samples: 0
-  vtheta_samples: 50 # 20
+  vtheta_samples: 20 # 20
 
   prune_plan: true
   aggregation_type: sum
