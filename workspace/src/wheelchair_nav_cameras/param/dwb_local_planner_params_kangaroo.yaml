@@ -9,7 +9,7 @@ DWBLocalPlanner:
   goal_checker_name: dwb_plugins::StoppedGoalChecker
   # Goal Tolerence
   xy_goal_tolerance: 0.4
-  yaw_goal_tolerance: 0.2 # 30 degree = 0.524 rad
+  yaw_goal_tolerance: 1.57 # 30 degree = 0.524 rad
 
   # Acceleration Limits
   acc_lim_x: 0.1 #0.5 (29/11 acceleration caluse remapped according to controller manager)
@@ -32,7 +32,7 @@ DWBLocalPlanner:
   min_vel_y: 0.0
 
   # Path Simulation
-  sim_time: 5.0 # 2.0
+  sim_time: 6.0 # 2.0
   sim_period: 0.2
   #If discretize_by_time is false, then sim_granularity is the maximum amount of distance between
   # *  two successive points on the trajectory, and angular_sim_granularity is the maximum amount of
@@ -46,9 +46,9 @@ DWBLocalPlanner:
   # linear_granularity: 0.25
   # angular_sim_granularity: 0.25
   # angular_granularity: 12
-  vx_samples: 40
+  vx_samples: 50
   vy_samples: 0
-  vtheta_samples: 20 # 20
+  vtheta_samples: 40 # 20
 
   prune_plan: true
   aggregation_type: sum
