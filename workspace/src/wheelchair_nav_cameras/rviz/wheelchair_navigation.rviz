@@ -80,8 +80,6 @@ Visualization Manager:
           Value: false
         camera_color_optical_frame:
           Value: false
-        camera_d455_link:
-          Value: true
         camera_depth_frame:
           Value: false
         camera_depth_optical_frame:
@@ -114,8 +112,6 @@ Visualization Manager:
           Value: false
         rplidar:
           Value: true
-        world:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 1
       Name: TF
@@ -123,41 +119,38 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          map:
-            odom:
-              base_link:
-                camera_bottom_screw_frame:
-                  camera_link:
-                    camera_depth_frame:
-                      camera_color_frame:
-                        camera_color_optical_frame:
-                          {}
-                      camera_depth_optical_frame:
+        map:
+          odom:
+            base_link:
+              camera_bottom_screw_frame:
+                camera_link:
+                  camera_depth_frame:
+                    camera_color_frame:
+                      camera_color_optical_frame:
                         {}
-                      camera_left_ir_frame:
-                        camera_left_ir_optical_frame:
-                          {}
-                      camera_right_ir_frame:
-                        camera_right_ir_optical_frame:
-                          {}
-                camera_d455_link:
+                    camera_depth_optical_frame:
+                      {}
+                    camera_left_ir_frame:
+                      camera_left_ir_optical_frame:
+                        {}
+                    camera_right_ir_frame:
+                      camera_right_ir_optical_frame:
+                        {}
+              chassis:
+                camera_base_rod:
                   {}
-                chassis:
-                  camera_base_rod:
-                    {}
-                  caster1:
-                    {}
-                  caster2:
-                    {}
-                  lidar_base_rod:
-                    {}
-                  rod1:
-                    {}
-                  rod2:
-                    {}
-                  rplidar:
-                    {}
+                caster1:
+                  {}
+                caster2:
+                  {}
+                lidar_base_rod:
+                  {}
+                rod1:
+                  {}
+                rod2:
+                  {}
+                rplidar:
+                  {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -447,7 +440,7 @@ Visualization Manager:
       Marker Topic: /optimal_trajectory
       Name: MarkerArray
       Namespaces:
-        spline_opitimization_markers: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -473,7 +466,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -11.850790977478027
+      Angle: -12.535806655883789
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -483,10 +476,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 99.24117279052734
+      Scale: 65.37188720703125
       Target Frame: <Fixed Frame>
-      X: 3.2755627632141113
-      Y: 0.4784865081310272
+      X: 10.518132209777832
+      Y: -0.1418164074420929
     Saved: ~
 Window Geometry:
   Displays:

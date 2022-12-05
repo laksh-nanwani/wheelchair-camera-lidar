@@ -1,0 +1,84 @@
+DWBLocalPlanner:
+#   critics: [RotateToGoal, Oscillation, ObstacleFootprint, GoalAlign, PathAlign, PathDist, GoalDist]
+  critics: [Oscillation, ObstacleFootprint, PathDist, GoalDist, RotateToGoal, PathAlign, GoalAlign]
+  debug_trajectory_details: true
+  short_circuit_trajectory_evaluation: true
+
+  trajectory_generator_name: dwb_plugins::StandardTrajectoryGenerator #29/12(trajectory generator changed to get variable velocities during navigation) 
+#  trajectory_generator_name: dwb_plugins::LimitedAccelGenerator
+  goal_checker_name: dwb_plugins::StoppedGoalChecker
+  # Goal Tolerence
+  xy_goal_tolerance: 0.4
+  yaw_goal_tolerance: 1.57 # 30 degree = 0.524 rad
+
+  # Acceleration Limits
+  acc_lim_x: 0.1 #0.5 (29/11 acceleration caluse remapped according to controller manager)
+  acc_lim_y: 0.0
+  acc_lim_trans: 0.1 #0.5 (29/11 acceleration caluse remapped according to controller manager) 
+  acc_lim_theta: 1.4285 #2.3809 (29/11 acceleration caluse remapped according to controller manager) 
+  decel_lim_theta: -1.4285  #-2.3809 (29/11 acceleration caluse remapped according to controller manager) 
+  decel_lim_x: -0.1  #-1.8 (29/11 acceleration caluse remapped according to controller manager) 
+
+  # Velocity Limits
+  max_vel_theta: 0.3 #4.76 #0.5
+  ## min_vel_theta: 0.0
+  ## max_speed_theta: 0.2
+  min_speed_theta: 0.00
+  max_speed_xy: 0.3
+  min_speed_xy: 0.0
+  max_vel_x: 1.0
+  min_vel_x: 0.0 #-0.1 (29/11 backdriven enabled) 
+  max_vel_y: 1.0
+  min_vel_y: 0.0
+
+  # Path Simulation
+  sim_time: 6.0 # 2.0
+  sim_period: 0.2
+  #If discretize_by_time is false, then sim_granularity is the maximum amount of distance between
+  # *  two successive points on the trajectory, and angular_sim_granularity is the maximum amount of
+  # *  angular distance between two successive points.
+  discretize_by_time: true
+  time_granularity: 0.2
+
+  # unnecessary parameters - not used in our setup 
+  # TODO : Clean all parameter files
+  # sim_granularity : 0.05
+  # linear_granularity: 0.25
+  # angular_sim_granularity: 0.25
+  # angular_granularity: 12
+  vx_samples: 50
+  vy_samples: 0
+  vtheta_samples: 40 # 20
+
+  prune_plan: true
+  aggregation_type: sum
+  GoalDist:
+    scale: 100.0 #48.0
+  PathDist:
+    scale: 10.0 #72.0 # reduce this
+  ObstacleFootprint:
+    scale: 50.0
+  Oscillation:
+    scale: 100.0
+  RotateToGoal:
+    scale: 100.0
+  PathAlign:
+    scale: 10.0
+    forward_point_distance: 0.325 # 0.325
+  GoalAlign:
+    scale: 90.0 #50.0
+    forward_point_distance: 0.325 # 0.325
+
+  max_scaling_factor: 2.5
+  scaling_speed: 0.6
+
+#  forward_point_distance: 0.5
+  slowing_factor: 20.0
+  trans_stopped_velocity: 0.05
+  oscillation_reset_dist: 0.25
+  oscillation_reset_angle: 0.40
+  oscillation_reset_time: -1.0
+
+  publish_evaluation: true
+  publish_trajectories: true
+  publish_cost_grid_pc: true

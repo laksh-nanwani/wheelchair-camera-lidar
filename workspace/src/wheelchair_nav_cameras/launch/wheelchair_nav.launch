@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <launch>
   <!--arg default="$(find wheelchair_mapping)/maps/labtest2.yaml" name="map_file" /-->
-  <arg default="$(find wheelchair_mapping)/maps/cleaned_map_edited.yaml " name="map_file" />
+  <arg default="$(find wheelchair_mapping)/maps/lab_rrc_edited.yaml " name="map_file" />
   <arg default="true" name="open_rviz" />
   <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic" />
   <arg default="/odom" name="odom_topic" />
-  <arg default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair_real.xacro'" name="urdf_file" />
+  <arg default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair_real_new.xacro'" name="urdf_file" />
   
   <param command="$(arg urdf_file)" name="robot_description" />
 
