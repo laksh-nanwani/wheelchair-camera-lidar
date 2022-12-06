@@ -9,7 +9,6 @@ obstacle_layer:
  observation_sources: scan_front
  scan_front:
    data_type: LaserScan 
-   #topic: camera2/depth_scan
    topic: scan
    marking: true 
    clearing: true 
@@ -19,5 +18,5 @@ obstacle_layer:
    raytrace_range: 3.8
 
 # Footprint
-footprint: [[-0.375,-0.3], [0.375,-0.3], [0.375,0.3], [-0.375,0.3]]
-footprint_padding: 0.02
+footprint: [[-0.55,-0.4], [0.55,-0.4], [0.55,0.4], [-0.55,0.4]]
+footprint_padding: 0.1

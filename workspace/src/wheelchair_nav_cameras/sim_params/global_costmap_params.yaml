@@ -4,15 +4,15 @@ global_costmap:
   robot_base_frame: chassis
 
   # Update Frequency
-  update_frequency: 5.0
-  publish_frequency: 5.0
+  update_frequency: 1.0
+  publish_frequency: 1.0
 
   # Map Type
   static:
     enabled:              true
     map_topic: /map
     track_unknown_space:  true
-    lethal_cost_threshold: 100
+    lethal_cost_threshold: 70
     unknown_cost_value:    -1
     trinary_costmap:       false
     use_maximum:           true
