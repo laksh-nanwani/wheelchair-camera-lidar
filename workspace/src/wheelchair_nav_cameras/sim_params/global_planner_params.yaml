@@ -1,7 +1,7 @@
 DluxGlobalPlanner:
 # low neutral costs will result in longer paths that avoid high costs. Higher neutral costs will sometimes result in paths that go through high costs if the path is much shorter.
   neutral_cost: 20 #cost reduce on 19/12 for preferred path tuning.
-  scale: 3.0
+  scale: 4.0
   unknown_interpretation: expensive
 #default false:  if you don't want global path to change use true
   path_caching: false

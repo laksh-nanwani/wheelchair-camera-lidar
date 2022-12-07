@@ -25,14 +25,14 @@ DWBLocalPlanner:
   ## max_speed_theta: 0.2
   min_speed_theta: 0.0
   max_speed_xy: 0.3
-  min_speed_xy: 0.05
+  min_speed_xy: 0.0
   max_vel_x: 0.3
   min_vel_x: 0.0 #-0.1 (29/11 backdriven enabled) 
   max_vel_y: 0.0
   min_vel_y: 0.0
 
   # Path Simulation
-  sim_time: 3.0 # 2.0
+  sim_time: 4.0 # 2.0
   sim_period: 0.1
   #If discretize_by_time is false, then sim_granularity is the maximum amount of distance between
   # *  two successive points on the trajectory, and angular_sim_granularity is the maximum amount of
@@ -46,16 +46,16 @@ DWBLocalPlanner:
   # linear_granularity: 0.25
   # angular_sim_granularity: 0.25
   # angular_granularity: 12
-  vx_samples: 50
+  vx_samples: 20
   vy_samples: 1
-  vtheta_samples: 20 # 20
+  vtheta_samples: 40 # 20
 
   prune_plan: true
   aggregation_type: sum
   GoalDist:
-    scale: 5.0 #48.0
+    scale: 40.0 #48.0
   PathDist:
-    scale: 10.0 #72.0 # reduce this
+    scale: 50.0 #72.0 # reduce this
   ObstacleFootprint:
     scale: 100.0
   Oscillation:
@@ -63,11 +63,11 @@ DWBLocalPlanner:
   RotateToGoal:
     scale: 50.0
   PathAlign:
-    scale: 0.0
-    forward_point_distance: 0.6 # 0.325
+    scale: 50.0
+    forward_point_distance: 1.0 # 0.325
   GoalAlign:
-    scale: 0.0 #50.0
-    forward_point_distance: 0.0 # 0.325
+    scale: 50.0 #50.0
+    forward_point_distance: 1.0 # 0.325
 
   max_scaling_factor: 2.0
   scaling_speed: 1.0
