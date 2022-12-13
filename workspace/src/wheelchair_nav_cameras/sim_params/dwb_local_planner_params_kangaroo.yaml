@@ -1,6 +1,6 @@
 DWBLocalPlanner:
 #   critics: [RotateToGoal, Oscillation, ObstacleFootprint, GoalAlign, PathAlign, PathDist, GoalDist]
-  critics: [Oscillation, ObstacleFootprint, PathDist, GoalDist, RotateToGoal, PathAlign, GoalAlign]
+  critics: [Oscillation, ObstacleFootprint, PathDist, GoalDist, RotateToGoal, PathAlign, GoalAlign] #, PreferForward]
   debug_trajectory_details: true
   short_circuit_trajectory_evaluation: true
 
@@ -23,9 +23,9 @@ DWBLocalPlanner:
   max_vel_theta: 0.3 #4.76 #0.5
   ## min_vel_theta: 0.0
   ## max_speed_theta: 0.2
-  min_speed_theta: 0.0
+  min_speed_theta: 0.03
   max_speed_xy: 0.3
-  min_speed_xy: 0.0
+  min_speed_xy: 0.05
   max_vel_x: 0.3
   min_vel_x: 0.0 #-0.1 (29/11 backdriven enabled) 
   max_vel_y: 0.0
@@ -33,7 +33,7 @@ DWBLocalPlanner:
 
   # Path Simulation
   sim_time: 4.0 # 2.0
-  sim_period: 0.1
+  # sim_period: 0.2
   #If discretize_by_time is false, then sim_granularity is the maximum amount of distance between
   # *  two successive points on the trajectory, and angular_sim_granularity is the maximum amount of
   # *  angular distance between two successive points.
@@ -53,21 +53,27 @@ DWBLocalPlanner:
   prune_plan: true
   aggregation_type: sum
   GoalDist:
-    scale: 40.0 #48.0
+    scale: 1.5 #48.0
   PathDist:
-    scale: 50.0 #72.0 # reduce this
+    scale: 0.3 #72.0 # reduce this
   ObstacleFootprint:
-    scale: 100.0
+    scale: 1.5
   Oscillation:
-    scale: 50.0
+    scale: 0.5
   RotateToGoal:
-    scale: 50.0
+    scale: 0.5
   PathAlign:
-    scale: 50.0
-    forward_point_distance: 1.0 # 0.325
+    scale: 0.7
+    forward_point_distance: 0.5 # 0.325
   GoalAlign:
-    scale: 50.0 #50.0
-    forward_point_distance: 1.0 # 0.325
+    scale: 0.05 #50.0
+    forward_point_distance: 0.5 # 0.325
+  # PreferForwardCritic:
+  #   penalty: 1.0
+  #   scale: 2.0
+  #   strafe_x: 0.1
+  #   strafe_theta: 0.3
+  #   theta_scale: 2.0
 
   max_scaling_factor: 2.0
   scaling_speed: 1.0
