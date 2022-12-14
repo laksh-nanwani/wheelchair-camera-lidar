@@ -33,7 +33,7 @@ DWBLocalPlanner:
 
   # Path Simulation
   sim_time: 4.0 # 2.0
-  sim_period: 0.1
+  # sim_period: 0.1
   #If discretize_by_time is false, then sim_granularity is the maximum amount of distance between
   # *  two successive points on the trajectory, and angular_sim_granularity is the maximum amount of
   # *  angular distance between two successive points.
