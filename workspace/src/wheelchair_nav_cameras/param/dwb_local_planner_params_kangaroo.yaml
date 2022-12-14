@@ -25,7 +25,7 @@ DWBLocalPlanner:
   ## max_speed_theta: 0.2
   min_speed_theta: 0.0
   max_speed_xy: 0.3
-  min_speed_xy: 0.0
+  min_speed_xy: 0.05
   max_vel_x: 0.3
   min_vel_x: 0.0 #-0.1 (29/11 backdriven enabled) 
   max_vel_y: 0.0
@@ -64,10 +64,10 @@ DWBLocalPlanner:
     scale: 50.0
   PathAlign:
     scale: 50.0
-    forward_point_distance: 1.0 # 0.325
+    forward_point_distance: 0.5 # 0.325
   GoalAlign:
-    scale: 50.0 #50.0
-    forward_point_distance: 1.0 # 0.325
+    scale: 70.0 #50.0
+    forward_point_distance: 0.5 # 0.325
 
   max_scaling_factor: 2.0
   scaling_speed: 1.0

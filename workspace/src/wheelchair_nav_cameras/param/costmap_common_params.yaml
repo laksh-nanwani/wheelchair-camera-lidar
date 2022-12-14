@@ -19,4 +19,4 @@ obstacle_layer:
 
 # Footprint
 footprint: [[-0.375,-0.3], [0.375,-0.3], [0.375,0.3], [-0.375,0.3]]
-footprint_padding: 0.1
+footprint_padding: 0.05
