@@ -8,8 +8,8 @@ DWBLocalPlanner:
 #  trajectory_generator_name: dwb_plugins::LimitedAccelGenerator
   goal_checker_name: dwb_plugins::StoppedGoalChecker
   # Goal Tolerence
-  xy_goal_tolerance: 0.3
-  yaw_goal_tolerance: 0.524 # 30 degree = 0.524 rad
+  xy_goal_tolerance: 0.6
+  yaw_goal_tolerance: 1.57 # 30 degree = 0.524 rad
 
   # Acceleration Limits
   acc_lim_x: 0.1 #0.5 (29/11 acceleration caluse remapped according to controller manager)
@@ -52,16 +52,28 @@ DWBLocalPlanner:
 
   prune_plan: true
   aggregation_type: sum
+
+# BaseObstacle - Scores a trajectory based on where the path passes over the costmap. To use this properly, you must use the inflation layer in costmap to expand obstacles by the robot's radius.
+# ObstacleFootprint - Scores a trajectory based on verifying all points along the robot's footprint don't touch an obstacle marked in the costmap.
+# GoalAlign - Scores a trajectory based on how well aligned the trajectory is with the goal pose.
+# GoalDist - Scores a trajectory based on how close the trajectory gets the robot to the goal pose.
+# PathAlign - Scores a trajectory based on how well it is aligned to the path provided by the global planner.
+# PathDist - Scores a trajectory based on how far it ends up from the path provided by the global planner.
+# PreferForward - Scores trajectories that move the robot forwards more highly
+# RotateToGoal - Only allows the robot to rotate to the goal orientation when it is sufficiently close to the goal location
+# Oscillation - Prevents the robot from just moving backwards and forwards.
+# Twirling - Prevents holonomic robots from spinning as they make their way to the goal.
+
   GoalDist:
-    scale: 40.0 #48.0
+    scale: 50.0 #48.0
   PathDist:
-    scale: 40.0 #72.0 # reduce this
+    scale: 20.0 #72.0 # reduce this
   ObstacleFootprint:
     scale: 100.0
   Oscillation:
     scale: 50.0
   RotateToGoal:
-    scale: 50.0
+    scale: 100.0
   PathAlign:
     scale: 30.0
     forward_point_distance: 0.6 # 0.325
