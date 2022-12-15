@@ -105,16 +105,12 @@ Visualization Manager:
           Value: false
         chassis:
           Value: false
-        left_wheel:
-          Value: false
         lidar_base_rod:
           Value: false
         map:
           Value: true
         odom:
           Value: true
-        right_wheel:
-          Value: false
         rod1:
           Value: false
         rod2:
@@ -152,11 +148,7 @@ Visualization Manager:
                   {}
                 caster2:
                   {}
-                left_wheel:
-                  {}
                 lidar_base_rod:
-                  {}
-                right_wheel:
                   {}
                 rod1:
                   {}
@@ -540,7 +532,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -11.005803108215332
+      Angle: -12.575824737548828
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -550,10 +542,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 55.641849517822266
+      Scale: 68.790771484375
       Target Frame: <Fixed Frame>
-      X: -1.504066824913025
-      Y: 0.2470112144947052
+      X: 10.975265502929688
+      Y: -1.024266004562378
     Saved: ~
 Window Geometry:
   Displays:
