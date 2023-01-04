@@ -8,7 +8,7 @@ import os
 
 # PATH = "~/wheelchair-camera-lidar/workspace/src/vlmaps/vlmaps_data_creator/data/rgb/"
 curr_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PATH = os.path.join(curr_path, "data", "rgb")
+PATH = os.path.join(curr_path, "data", "depth")
 NUM = 0
 
 bridge = CvBridge()
