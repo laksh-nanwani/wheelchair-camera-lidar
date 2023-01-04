@@ -2,6 +2,7 @@
 workspace/devel
 workspace/build
 rtabmap_databases
+workspace/src/vlmaps/vlmaps_data_creator/data_full
 
 # Files
 workspace/.catkin_workspace
