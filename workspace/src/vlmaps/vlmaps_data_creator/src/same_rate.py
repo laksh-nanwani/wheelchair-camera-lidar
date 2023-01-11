@@ -2,7 +2,6 @@
 import rospy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image
-import message_filters
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import numpy as np
@@ -32,7 +31,7 @@ class my_class:
                         }
 
         self.img_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.image_callback)
-        self.depth_sub = rospy.Subscriber("/camera/depth/image_rect_raw", Image, self.depth_callback)
+        # self.depth_sub = rospy.Subscriber("/camera/depth/image_rect_raw", Image, self.depth_callback)
         self.aligned_depth_sub = rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, self.aligned_depth_callback)
         self.odom_sub = rospy.Subscriber("/odom", Odometry, self.odom_callback)
         # self.visual_odom_sub = rospy.Subscriber("/rtabmap/odom", Odometry, self.visual_odom_callback)
@@ -47,13 +46,22 @@ class my_class:
         print(type(self.msgs_dict["image"]))
         cv2.imwrite(path, self.msgs_dict["image"])
 
-        path = os.path.join(ALIGNED_DEPTH_PATH, f"img_{str(NUM)}.png")
-        print(path)
-        cv2.imwrite(path, self.msgs_dict["aligned_depth"])
+        # path = os.path.join(ALIGNED_DEPTH_PATH, f"img_{str(NUM)}.png")
+        # print(path)
+        # cv2.imwrite(path, self.msgs_dict["aligned_depth"])
 
-        path = os.path.join(DEPTH_PATH, f"img_{str(NUM)}.png")
+        # path = os.path.join(DEPTH_PATH, f"img_{str(NUM)}.png")
+        # print(path)
+        # cv2.imwrite(path, self.msgs_dict["depth"])
+
+        path = os.path.join(ALIGNED_DEPTH_PATH, f"depth_{str(NUM)}.npy")
         print(path)
-        cv2.imwrite(path, self.msgs_dict["depth"])
+        np.save(path, self.msgs_dict["aligned_depth"])
+        # cv2.imwrite(path, self.msgs_dict["aligned_depth"])
+
+        # path = os.path.join(DEPTH_PATH, f"depth_{str(NUM)}.npy")
+        # print(path)
+        # cv2.imwrite(path, self.msgs_dict["depth"])
 
         path = os.path.join(ODOM_PATH, "pose_" + str(NUM))
         print(self.msgs_dict["odom"], path)
@@ -85,27 +93,30 @@ class my_class:
         # global NUM
         # print("Received an image!")
         try:
-            cv2_img = bridge.imgmsg_to_cv2(msg, "16UC1")
+            depth_image = bridge.imgmsg_to_cv2(msg, "16UC1")
+            # depth_image = bridge.imgmsg_to_cv2(msg, desired_encoding = "passthrough")
         except CvBridgeError as e:
             print(e)
-        else:
+        # else:
         #     path = os.path.join(ALIGNED_DEPTH_PATH, f"img_{str(NUM)}.png")
         #     print(path)
         #     cv2.imwrite(path, cv2_img)
-            self.msgs_dict["aligned_depth"] = cv2_img
+        depth_array = np.array(depth_image, dtype=np.float32)
+        self.msgs_dict["aligned_depth"] = depth_array
 
     def depth_callback(self, msg):
         # global NUM
         # print("Received an image!")
         try:
-            cv2_img = bridge.imgmsg_to_cv2(msg, "16UC1")
+            depth_image = bridge.imgmsg_to_cv2(msg, desired_encoding = "passthrough")
         except CvBridgeError as e:
             print(e)
-        else:
+        
         #     path = os.path.join(DEPTH_PATH, f"img_{str(NUM)}.png")
         #     print(path)
         #     cv2.imwrite(path, cv2_img)
-            self.msgs_dict["depth"] = cv2_img
+        depth_array = np.array(depth_image, dtype=np.float32)
+        self.msgs_dict["depth"] = depth_array
 
     def visual_odom_callback(self, msg):
         # global NUM
