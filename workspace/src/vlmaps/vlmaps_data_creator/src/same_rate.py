@@ -2,20 +2,23 @@
 import rospy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import numpy as np
 import os
 
 curr_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+folder_name = "data_amcl"
 
-IMAGE_PATH = os.path.join(curr_path, "data", "rgb")
-ALIGNED_DEPTH_PATH = os.path.join(curr_path, "data", "aligned_depth")
-VISUAL_ODOM_PATH = os.path.join(curr_path, "data", "visual_odom")
-ODOM_PATH = os.path.join(curr_path, "data", "odom")
-DEPTH_PATH = os.path.join(curr_path, "data", "depth")
+IMAGE_PATH = os.path.join(curr_path, folder_name, "rgb")
+ALIGNED_DEPTH_PATH = os.path.join(curr_path, folder_name, "aligned_depth")
+VISUAL_ODOM_PATH = os.path.join(curr_path, folder_name, "visual_odom")
+ODOM_PATH = os.path.join(curr_path, folder_name, "odom")
+DEPTH_PATH = os.path.join(curr_path, folder_name, "depth")
 
 NUM = 0
+FACTOR = 1
 
 bridge = CvBridge()
 
@@ -23,21 +26,24 @@ class my_class:
     def __init__(self):
         self.save_msgs_flag = False
 
+        self.count = 0
         self.msgs_dict = {"image":np.zeros(1),
                         "aligned_depth":np.zeros(1),
-                        "depth":np.zeros(1),
-                        "odom":np.zeros(1),
-                        # "visual_odom":np.zeros(1),        
+                        # "depth":np.zeros(1),
+                        # "odom":np.zeros(1),
+                        "visual_odom":np.zeros(1),        
                         }
 
         self.img_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.image_callback)
         # self.depth_sub = rospy.Subscriber("/camera/depth/image_rect_raw", Image, self.depth_callback)
         self.aligned_depth_sub = rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, self.aligned_depth_callback)
-        self.odom_sub = rospy.Subscriber("/odom", Odometry, self.odom_callback)
+        # self.odom_sub = rospy.Subscriber("/odom", Odometry, self.odom_callback)
         # self.visual_odom_sub = rospy.Subscriber("/rtabmap/odom", Odometry, self.visual_odom_callback)
+        self.amcl_sub = rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.visual_odom_callback)
 
     def save_msgs(self):
-        if not self.save_msgs_flag:
+        if not self.save_msgs_flag or self.count % FACTOR != 0:
+            self.save_msgs_flag = False
             return
         
         global NUM
@@ -64,8 +70,8 @@ class my_class:
         # cv2.imwrite(path, self.msgs_dict["depth"])
 
         path = os.path.join(ODOM_PATH, "pose_" + str(NUM))
-        print(self.msgs_dict["odom"], path)
-        np.save(path, self.msgs_dict["odom"])
+        print(self.msgs_dict["visual_odom"], path)
+        np.save(path, self.msgs_dict["visual_odom"])
 
         # path = os.path.join(VISUAL_ODOM_PATH, "pose_" + str(NUM))
         # print(self.msgs_dict["visual_odom"], path)
@@ -134,7 +140,8 @@ class my_class:
         # print(pose, path)
         # np.save(path, pose)
         self.msgs_dict["visual_odom"] = pose
-        # self.save_msgs_flag = True
+        self.save_msgs_flag = True
+        self.count += 1
 
     def odom_callback(self, msg):
         # global NUM
