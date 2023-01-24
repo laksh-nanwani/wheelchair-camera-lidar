@@ -5,3 +5,8 @@ rtabmap_databases
 
 # Files
 workspace/.catkin_workspace
+
+# Logs
+workspace/logs
+
+workspace/.catkin_tools
