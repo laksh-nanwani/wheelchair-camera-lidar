@@ -1,6 +1,7 @@
 # Folders / Directories
 workspace/devel
 workspace/build
+workspace/src/vlmaps
 rtabmap_databases
 
 # Files
