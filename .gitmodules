@@ -1,0 +1,6 @@
+[submodule "workspace/src/dependencies/voronoi/voronoi_planner"]
+	path = workspace/src/dependencies/voronoi/voronoi_planner
+	url = ../../frontw/voronoi_planner.git
+[submodule "workspace/src/dependencies/voronoi/dynamicvoronoi"]
+	path = workspace/src/dependencies/voronoi/dynamicvoronoi
+	url = ../../frontw/dynamicvoronoi.git
