@@ -8,7 +8,7 @@ def talker():
     rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():
-        f = open("/home/raghav/Dev/wheelchair-camera-lidar/workspace/commands.txt", "r")
+        f = open("/home/raghav/Dev/wheelchair-camera-lidar/commands.txt", "r")
         hello_str = f.read() 
         rospy.loginfo(hello_str)
         pub.publish(hello_str)

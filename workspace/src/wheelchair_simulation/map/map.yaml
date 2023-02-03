@@ -1,4 +1,4 @@
-image: /home/laksh-nanwani/wheelchair/src/wheelchair_simulation/map/map.pgm
+image: /home/raghav/Dev/wheelchair-camera-lidar/workspace/src/wheelchair_simulation/map/map.pgm
 resolution: 0.050000
 origin: [-13.972023, -14.199562, 0.000000]
 negate: 0
