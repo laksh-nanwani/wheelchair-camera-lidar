@@ -8,13 +8,14 @@ import cv2
 import numpy as np
 import os
 
-curr_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# curr_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+path = "/home/laksh/vlmaps_data"
+folder_name = "data_synced"
 
-IMAGE_PATH = os.path.join(curr_path, "data", "rgb")
-ALIGNED_DEPTH_PATH = os.path.join(curr_path, "data", "aligned_depth")
-VISUAL_ODOM_PATH = os.path.join(curr_path, "data", "visual_odom")
-ODOM_PATH = os.path.join(curr_path, "data", "odom")
-DEPTH_PATH = os.path.join(curr_path, "data", "depth")
+IMAGE_PATH = os.path.join(path, folder_name, "rgb")
+ALIGNED_DEPTH_PATH = os.path.join(path, folder_name, "aligned_depth")
+ODOM_PATH = os.path.join(path, folder_name, "odom")
+DEPTH_PATH = os.path.join(path, folder_name, "depth")
 
 NUM = 0
 
@@ -22,24 +23,22 @@ bridge = CvBridge()
 
 class my_class:
     def __init__(self):
-        self.odom_sub = message_filters.Subscriber("/odom", Odometry)
-        self.visual_odom_sub = message_filters.Subscriber("/rtabmap/odom", Odometry)
+        self.odom_sub = message_filters.Subscriber("/RosAria/pose", Odometry)
         self.img_sub = message_filters.Subscriber("/camera/color/image_raw", Image)
-        self.depth_sub = message_filters.Subscriber("/camera/depth/image_rect_raw", Image)
-        self.aligned_depth_sub = message_filters.Subscriber("/camera/aligned_depth/image_raw", Image)
-        self.ts = message_filters.TimeSynchronizer([self.img_sub, self.aligned_depth_sub, self.depth_sub, self.visual_odom_sub, self.odom_sub], 10)
+        self.aligned_depth_sub = message_filters.Subscriber("/camera/aligned_depth_to_color/image_raw", Image)
+        # self.ts = message_filters.TimeSynchronizer([self.img_sub, self.aligned_depth_sub, self.depth_sub, self.visual_odom_sub, self.odom_sub], 10)
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.odom_sub, self.img_sub, self.aligned_depth_sub], 5, slop=1/50)
+        # print("1")
         self.ts.registerCallback(self.combined_callback)
+        # print(2)
 
-    def combined_callback(self, msg1, msg2, msg3, msg4, msg5):
+    def combined_callback(self, msg1, msg2, msg3):
         print("here")
         global NUM
-        self.image_callback(msg1)
-        self.aligned_depth_callback(msg2)
-        self.depth_callback(msg3)
-        self.visual_odom_callback(msg4)
-        self.odom_callback(msg5)
+        self.odom_callback(msg1)
+        self.image_callback(msg2)
+        self.aligned_depth_callback(msg3)
         NUM += 1
-
 
     def image_callback(self, msg):
         global NUM
@@ -49,7 +48,8 @@ class my_class:
         except CvBridgeError as e:
             print(e)
         else:
-            path = os.path.join(IMAGE_PATH, f"img_{str(NUM)}.png")
+            cv2_img = cv2.rotate(cv2_img, cv2.ROTATE_180)
+            path = os.path.join(IMAGE_PATH, f"{str(NUM)}.png")
             print(path)
             cv2.imwrite(path, cv2_img)
 
@@ -61,43 +61,20 @@ class my_class:
         except CvBridgeError as e:
             print(e)
         else:
-            path = os.path.join(ALIGNED_DEPTH_PATH, f"img_{str(NUM)}.png")
+            cv2_img = cv2.rotate(cv2_img, cv2.ROTATE_180)
+
+            path = os.path.join(ALIGNED_DEPTH_PATH, f"{str(NUM)}.png")
             print(path)
             cv2.imwrite(path, cv2_img)
-
-    def depth_callback(self, msg):
-        global NUM
-        print("Received an image!")
-        try:
-            cv2_img = bridge.imgmsg_to_cv2(msg, "16UC1")
-        except CvBridgeError as e:
-            print(e)
-        else:
-            path = os.path.join(DEPTH_PATH, f"img_{str(NUM)}.png")
-            print(path)
-            cv2.imwrite(path, cv2_img)
-
-    def visual_odom_callback(self, msg):
-        global NUM
-        print("Received odom!")
-        path = os.path.join(VISUAL_ODOM_PATH, "pose_" + str(NUM))
-        print(path)
-        pose = np.array([msg.pose.pose.position.x,
-                        msg.pose.pose.position.y,
-                        msg.pose.pose.position.z,
-                        msg.pose.pose.orientation.x,
-                        msg.pose.pose.orientation.y,
-                        msg.pose.pose.orientation.z,
-                        msg.pose.pose.orientation.w])
-
-        print(pose, path)
-
-        np.save(path, pose)
+            
+            depth_array = np.array(cv2_img, dtype=np.float32)
+            path = os.path.join(DEPTH_PATH, f"{str(NUM)}")
+            np.save(path, depth_array)
 
     def odom_callback(self, msg):
         global NUM
         print("Received odom!")
-        path = os.path.join(ODOM_PATH, "pose_" + str(NUM))
+        path = os.path.join(ODOM_PATH, str(NUM))
         print(path)
         pose = np.array([msg.pose.pose.position.x,
                         msg.pose.pose.position.y,
@@ -107,20 +84,12 @@ class my_class:
                         msg.pose.pose.orientation.z,
                         msg.pose.pose.orientation.w])
 
-        print(pose, path)
-
+        # print(pose, path)
         np.save(path, pose)
 
 
 if __name__ == "__main__":
     rospy.init_node("Time_sync")
     my_obj = my_class()
-    # publisher = rospy.Publisher("/lol_topic", Odometry, queue_size = 1)
-
-    # rate = rospy.Rate(8)
-
-    # while not rospy.is_shutdown():
-    #         publisher.publish(my_obj.odom)
-    #         rate.sleep()
 
     rospy.spin()

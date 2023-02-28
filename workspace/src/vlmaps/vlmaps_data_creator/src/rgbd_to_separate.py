@@ -10,7 +10,7 @@ import os
 # curr_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # path = os.path.join(curr_path, "data")
 path = "/home/laksh/vlmaps_data"
-folder_name = "data_p3dx_o3d"
+folder_name = "data_p3dx"
 
 IMAGE_PATH = os.path.join(path, folder_name, "rgb")
 DEPTH_PATH = os.path.join(path, folder_name, "depth")
