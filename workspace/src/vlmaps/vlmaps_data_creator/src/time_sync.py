@@ -10,7 +10,7 @@ import os
 
 # curr_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 path = "/home/laksh/vlmaps_data"
-folder_name = "data_synced"
+folder_name = "data_new"
 
 IMAGE_PATH = os.path.join(path, folder_name, "rgb")
 ALIGNED_DEPTH_PATH = os.path.join(path, folder_name, "aligned_depth")
@@ -48,7 +48,7 @@ class my_class:
         except CvBridgeError as e:
             print(e)
         else:
-            cv2_img = cv2.rotate(cv2_img, cv2.ROTATE_180)
+            # cv2_img = cv2.rotate(cv2_img, cv2.ROTATE_180)
             path = os.path.join(IMAGE_PATH, f"{str(NUM)}.png")
             print(path)
             cv2.imwrite(path, cv2_img)
@@ -61,7 +61,7 @@ class my_class:
         except CvBridgeError as e:
             print(e)
         else:
-            cv2_img = cv2.rotate(cv2_img, cv2.ROTATE_180)
+            # cv2_img = cv2.rotate(cv2_img, cv2.ROTATE_180)
 
             path = os.path.join(ALIGNED_DEPTH_PATH, f"{str(NUM)}.png")
             print(path)
