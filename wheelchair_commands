@@ -1,4 +1,4 @@
-
+# old commands
 cd ..
 source .bashrc
 cd wheelchair
@@ -15,3 +15,14 @@ rosrun wheelchair_simulation teleop.py
 catkin_make_isolated --install --use-ninja
 
 catkin_make_isolated --install --use-ninja --pkg package_name
+
+______________________
+
+# current commands
+
+roslaunch kangaroo_driver kangaroo_driver.launch
+roslaunch rplidar_ros rplidar_a3.launch 
+roslaunch wheelchair_mapping robot_state_publish.launch
+roslaunch wheelchair_nav_cameras angle_range_filter.launch
+roslaunch wheelchair_nav_cameras wheelchair_nav.launch
+rosrun kangaroo_driver teleop_cmd_vel.py
