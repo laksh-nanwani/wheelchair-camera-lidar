@@ -10,11 +10,11 @@ import os
 
 # curr_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 path = "/home/laksh/vlmaps_data"
-folder_name = "data_new"
+folder_name = "testing_m2f_p3dx"
 
 IMAGE_PATH = os.path.join(path, folder_name, "rgb")
 ALIGNED_DEPTH_PATH = os.path.join(path, folder_name, "aligned_depth")
-ODOM_PATH = os.path.join(path, folder_name, "odom")
+ODOM_PATH = os.path.join(path, folder_name, "pose")
 DEPTH_PATH = os.path.join(path, folder_name, "depth")
 
 NUM = 0
@@ -25,9 +25,9 @@ class my_class:
     def __init__(self):
         self.odom_sub = message_filters.Subscriber("/RosAria/pose", Odometry)
         self.img_sub = message_filters.Subscriber("/camera/color/image_raw", Image)
-        self.aligned_depth_sub = message_filters.Subscriber("/camera/aligned_depth_to_color/image_raw", Image)
+        self.aligned_depth_sub = message_filters.Subscriber("/camera/depth/image_rect_raw", Image)
         # self.ts = message_filters.TimeSynchronizer([self.img_sub, self.aligned_depth_sub, self.depth_sub, self.visual_odom_sub, self.odom_sub], 10)
-        self.ts = message_filters.ApproximateTimeSynchronizer([self.odom_sub, self.img_sub, self.aligned_depth_sub], 5, slop=1/50)
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.odom_sub, self.img_sub, self.aligned_depth_sub], 10, slop=0.1)
         # print("1")
         self.ts.registerCallback(self.combined_callback)
         # print(2)

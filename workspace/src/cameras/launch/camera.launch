@@ -5,7 +5,7 @@
   <include file="$(find realsense2_camera)/launch/rs_camera.launch">
     <arg name="align_depth" value="true" />
     <!--arg name="filters" value="pointcloud"/-->
-    <arg name="initial_reset" value="true"/>
+    <!-- <arg name="initial_reset" value="true"/> -->
     <!--arg name="enable_gyro" value="true"/-->
     <!--arg name="enable_accel" value="true"/-->
     <!--arg name="unite_imu_method" value="linear_interpolation"/-->

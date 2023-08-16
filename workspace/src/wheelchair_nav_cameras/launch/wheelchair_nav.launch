@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <!--arg default="$(find wheelchair_mapping)/maps/labtest2.yaml" name="map_file" /-->
-  <arg default="$(find wheelchair_mapping)/maps/merged_map.yaml " name="map_file" />
+  <arg default="$(find wheelchair_mapping)/maps/map_gt.yaml" name="map_file" />
+  <!-- <arg default="$(find wheelchair_mapping)/maps/cleaned_map_edited.yaml " name="map_file" /> -->
   <arg default="true" name="open_rviz" />
   <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic" />
   <arg default="/odom" name="odom_topic" />
