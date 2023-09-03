@@ -2,6 +2,14 @@
 workspace/devel
 workspace/build
 rtabmap_databases
+# workspace/src/vlmaps/vlmaps_data_creator/data_full
+# workspace/src/vlmaps/vlmaps_data_creator/data
+# workspace/src/vlmaps/vlmaps_data_creator/data_depth_issue
+# workspace/src/vlmaps/vlmaps_data_creator/data_imgs_1to1
+workspace/src/vlmaps/vlmaps_data_creator/vlmaps bag 1
+workspace/src/vlmaps/vlmaps_data_creator/vlmaps bag 2
+workspace/src/vlmaps/vlmaps_data_creator/data_amcl.zip
+workspace/src/vlmaps/vlmaps_data_creator/data_odom.zip
 
 # Files
 workspace/.catkin_workspace

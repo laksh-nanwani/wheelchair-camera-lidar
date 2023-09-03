@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <launch>
-  <!--arg default="$(find wheelchair_mapping)/maps/labtest2.yaml" name="map_file" /-->
-  <arg default="$(find wheelchair_mapping)/maps/cleaned_map.yaml " name="map_file" />
+  <!-- <arg default="$(find wheelchair_mapping)/maps/map_gt.yaml" name="map_file" /> -->
+  <arg default="$(find wheelchair_mapping)/maps/thub_full.yaml" name="map_file" />
+  <!-- <arg default="$(find wheelchair_mapping)/maps/cleaned_map_edited.yaml " name="map_file" /> -->
   <arg default="true" name="open_rviz" />
   <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic" />
   <arg default="/odom" name="odom_topic" />
-  <arg default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair_real.xacro'" name="urdf_file" />
+  <arg default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair_real_new.xacro'" name="urdf_file" />
   
   <param command="$(arg urdf_file)" name="robot_description" />
 
@@ -23,11 +24,11 @@
   <node name="locomotor" output="screen" pkg="locomove_base" respawn="false" type="move_base">
     <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/costmap_common_params.yaml" ns="global_costmap" />
     <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/costmap_common_params.yaml" ns="local_costmap" />
-    <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/local_costmap_params_kanishk.yaml" />
+    <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/local_costmap_params.yaml" />
     <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/global_costmap_params.yaml" />
     <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/move_base_params.yaml" />
     <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/dwb_local_planner_params_kangaroo.yaml" />
-    <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/global_planner_params.yaml" />
+    <rosparam command="load" file="$(find wheelchair_nav_cameras)/param/global_planner_params_voronoi.yaml" />
     <remap from="cmd_vel" to="$(arg cmd_vel_topic)" />
     <remap from="odom" to="$(arg odom_topic)" />
   </node>

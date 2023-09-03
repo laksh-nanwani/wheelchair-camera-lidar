@@ -1,0 +1,6 @@
+free_thresh: 0.5
+image: map_vlmaps.png
+negate: 0
+occupied_thresh: 0.5
+origin: [-4.55, -3.972, 0.0]
+resolution: 0.05

@@ -60,7 +60,7 @@ DWBLocalPlanner:
     scale: 100.0
     forward_point_distance: 0.325
   GoalAlign:
-    scale: 80.0 #50.0
+    scale: 0.0 #50.0
     forward_point_distance: 0.325
 
   max_scaling_factor: 2.5

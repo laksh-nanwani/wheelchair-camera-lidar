@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+  <!--arg default="$(find wheelchair_mapping)/maps/labtest2.yaml" name="map_file" /-->
+  <arg default="$(find wheelchair_mapping)/maps/hospital.yaml " name="map_file" />
+  <arg default="true" name="open_rviz" />
+  <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic" />
+  <arg default="/odom" name="odom_topic" />
+
+  <node args="$(arg map_file)" name="map_server" pkg="map_server" type="map_server" />
+  
+
+ <include file="$(find wheelchair_nav_cameras)/launch/amcl_kanishk.launch" />
+
+  <node name="locomotor" output="screen" pkg="locomove_base" respawn="false" type="move_base">
+    <rosparam command="load" file="$(find wheelchair_nav_cameras)/sim_params/costmap_common_params.yaml" ns="global_costmap" />
+    <rosparam command="load" file="$(find wheelchair_nav_cameras)/sim_params/costmap_common_params.yaml" ns="local_costmap" />
+    <rosparam command="load" file="$(find wheelchair_nav_cameras)/sim_params/local_costmap_params.yaml" />
+    <rosparam command="load" file="$(find wheelchair_nav_cameras)/sim_params/global_costmap_params.yaml" />
+    <rosparam command="load" file="$(find wheelchair_nav_cameras)/sim_params/move_base_params.yaml" />
+    <rosparam command="load" file="$(find wheelchair_nav_cameras)/sim_params/dwb_local_planner_params_kangaroo.yaml" />
+    <rosparam command="load" file="$(find wheelchair_nav_cameras)/sim_params/global_planner_params_voronoi.yaml" />
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)" />
+    <remap from="odom" to="$(arg odom_topic)" />
+  </node>
+
+
+  <group if="$(arg open_rviz)">
+    <node args="-d $(find wheelchair_nav_cameras)/rviz/wheelchair_navigation.rviz" name="rviz" pkg="rviz" required="true" type="rviz" />
+  </group>
+
+</launch>
