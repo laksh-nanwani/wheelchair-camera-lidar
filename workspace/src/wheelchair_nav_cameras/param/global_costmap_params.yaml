@@ -4,8 +4,8 @@ global_costmap:
   robot_base_frame: chassis
 
   # Update Frequency
-  update_frequency: 5.0
-  publish_frequency: 5.0
+  update_frequency: 10.0
+  publish_frequency: 10.0
 
   # Map Type
   static:
