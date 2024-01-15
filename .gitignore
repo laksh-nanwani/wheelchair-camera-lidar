@@ -11,5 +11,8 @@ workspace/src/vlmaps/vlmaps_data_creator/vlmaps bag 2
 workspace/src/vlmaps/vlmaps_data_creator/data_amcl.zip
 workspace/src/vlmaps/vlmaps_data_creator/data_odom.zip
 
+workspace/wheelchair_new_mesh
+workspace/src/language_nav/src/corenlp*
+
 # Files
 workspace/.catkin_workspace
