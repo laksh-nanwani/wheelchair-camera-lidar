@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
 
-  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '/home/laksh/wheelchair-camera-lidar/workspace/src/wheelchair_description/urdf/wheelchair_real_new.xacro'" />
+  <!-- <arg name="urdf_file" default="$(find xacro)/xacro '/home/laksh/wheelchair-camera-lidar/workspace/src/wheelchair_description/urdf/wheelchair_real_new_azure.xacro'" /> -->
+  <arg name="urdf_file" default="$(find xacro)/xacro '/home/laksh/wheelchair-camera-lidar/workspace/src/wheelchair_description/urdf/wheelchair_real_livox.xacro'" />
   <arg name="multi_robot_name" default=""/>
   <param name="robot_description" command="$(arg urdf_file)" />
 

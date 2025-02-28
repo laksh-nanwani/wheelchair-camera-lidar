@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="cfg"                     default="$(find wheelchair_mapping)/params/wheelchair_localization.ini"/>
+  <arg name="database_path"           default="/mnt/hd1/thub_map/wheelchair_realsense_lidar/localisation.db"/>
+
+  <arg name="wait_for_transform"      default="0.2"/>
+  <arg name="frame_id"                default="base_link"/>
+
+  <!-- <arg name="subscribe_depth"         default="true"/> -->
+  <arg name="subscribe_rgb"           default="true"/>
+  <arg name="subscribe_scan"          default="true"/>
+
+  <arg name="rgb_topic"               default="/camera/color/image_raw" />
+  <arg name="depth_topic"             default="/camera/aligned_depth_to_color/image_raw" />
+  <arg name="camera_info_topic"       default="/camera/color/camera_info"/>
+  <arg name="scan_topic"              default="/scan"/>
+
+  <arg name="visual_odometry"         default="false"/>
+  <arg name="odom_topic"              default="/odom"/>
+
+  <arg name="queue_size"              default="10"/>
+  <arg name="approx_sync"             default="true"/>
+
+  <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+    <arg name="localization" value="true"/>
+
+    <arg name="cfg" value="$(arg cfg)"/>
+    <arg name="database_path" value="$(arg database_path)"/>
+
+    <arg name="frame_id" value="$(arg frame_id)"/>
+    <arg name="wait_for_transform" value="$(arg wait_for_transform)"/>
+
+    <arg name="subscribe_rgb" value="$(arg subscribe_rgb)"/>
+    <arg name="rgb_topic" value="$(arg rgb_topic)"/>
+    <arg name="camera_info_topic" value="$(arg camera_info_topic)"/>
+
+    <!-- <arg name="subscribe_depth" value="$(arg subscribe_depth)"/> -->
+    <arg name="depth_topic" value="$(arg depth_topic)"/>
+
+    <arg name="scan_topic" value="$(arg scan_topic)"/>
+    <arg name="subscribe_scan" value="$(arg subscribe_scan)"/>
+
+    <arg name="visual_odometry" value="$(arg visual_odometry)"/>
+    <arg name="odom_topic" value="$(arg odom_topic)"/>
+
+    <arg name="approx_sync" value="$(arg approx_sync)"/>
+    <arg name="queue_size" value="$(arg queue_size)"/>
+
+  </include>
+
+</launch>
