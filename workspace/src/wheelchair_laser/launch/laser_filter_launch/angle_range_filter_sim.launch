@@ -1,0 +1,10 @@
+<launch>
+<arg name="input_scan_topic" value="scan_raw"/>
+<arg name="output_scan_topic" value="scan"/>
+
+<node pkg="laser_filters" type="scan_to_scan_filter_chain" output="screen" name="laser_filter">
+      <rosparam command="load" file="$(find wheelchair_nav_cameras)/laser_filter launch/angle_range_filter_sim.yaml" />
+      <remap from="scan" to="$(arg input_scan_topic)"/>
+      <remap from="scan_filtered" to="$(arg output_scan_topic)"/>
+</node>
+</launch>
