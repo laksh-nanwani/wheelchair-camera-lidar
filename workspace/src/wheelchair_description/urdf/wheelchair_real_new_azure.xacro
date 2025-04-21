@@ -3,9 +3,8 @@
   <!--Include Files-->
   <xacro:include filename="$(find wheelchair_description)/urdf/links_joints.xacro" />
   <xacro:include filename="$(find wheelchair_description)/urdf/wheelchair_gazebo.xacro" />
+	<xacro:include filename="$(find azure_kinect_ros_driver)/urdf/azure_kinect.urdf.xacro" />
   <xacro:include filename="$(find wheelchair_description)/urdf/_d435.xacro" />
-  <!-- uncomment if using livox_laser_simulation -->
-  <!-- <xacro:include filename="$(find livox_laser_simulation)/urdf/livox_mid360.xacro" /> --> 
   <xacro:arg name="use_nominal_extrinsics" default="false"/>
   <xacro:arg name="add_plug" default="false" />
   <xacro:arg name="use_mesh" default="true" />
@@ -196,48 +195,18 @@
                    filename="package://wheelchair_description/meshes/rplidar.dae" scale="1 1 1"/>
 
 <!-- joint between chassis and lidar -->
-      <xacro:f_joint name="chassis_to_rplidar"
+      <!-- <xacro:f_joint name="chassis_to_rplidar"
                type="fixed"
                axis_xyz="0 0 0"
                origin_rpy="0 0 -1.57" origin_xyz="0.23 0 -0.15"
-               parent="chassis" child="rplidar" />
+               parent="chassis" child="rplidar" /> -->
 
-<!-- comment out if using livox_laser_simulation -->
-    <xacro:f_link_box name="livox_base"
-                 origin_rpy="0 0 0" origin_xyz="0 0 0"
-                 mass="0.2"
-                 ixx="0.100000005621" ixy="0.100000001310" ixz="0.100000001649"
-                 iyy="0.100000004345" iyz="0.100000002360"
-                 izz="0.100000003315"
-                 material="black"
-                 size="0.1 0.1 0.1"/>
-
-<!-- comment out if using livox_laser_simulation -->
-    <xacro:f_link_box name="livox"
-                 origin_rpy="0 0 0" origin_xyz="0 0 0"
-                 mass="0.1"
-                 ixx="0.100000005621" ixy="0.100000001310" ixz="0.100000001649"
-                 iyy="0.100000004345" iyz="0.100000002360"
-                 izz="0.100000003315"
-                 material="black"
-                 size="0.1 0.1 0.1"/>
-
-
-<!-- uncomment out if using livox_laser_simulation -->
-      <!-- <xacro:Livox_Mid40 name="livox"/> -->
-
-      <xacro:f_joint name="base_link_to_livox"
+    <!-- new config -->
+      <xacro:f_joint name="base_link_to_rplidar"
                type="fixed"
                axis_xyz="0 0 0"
-               origin_rpy="0 0 0" origin_xyz="-0.04 0.0 1.25 "
-               parent="base_link" child="livox_base" />
-
-<!-- comment out if using livox_laser_simulation -->
-      <xacro:f_joint name="livox_base_livox"
-               type="fixed"
-               axis_xyz="0 0 0"
-               origin_rpy="0 0 0" origin_xyz="0 0 0"
-               parent="livox_base" child="livox" />
+               origin_rpy="0 0 0" origin_xyz="0.90 0 -0.03"
+               parent="base_link" child="rplidar" />
 
 <!--Real_Sense-->
  
@@ -255,9 +224,16 @@
         <origin xyz="0.53 -0.25 -0.58" rpy="-0.005 -0.11 -0.03"/>
       </xacro:sensor_d455-->
 
-      <xacro:sensor_d435 parent="base_link" name="camera">
-        <origin xyz="0.025 0.0 1.315" rpy="0 0 0"/>
-      </xacro:sensor_d435>
+      <!--use this if not using azure-->
+      <!-- <xacro:sensor_d435 parent="base_link" name="camera">
+        <origin xyz="0.20 -0.24 0.50" rpy="0 -0.01 0"/>
+      </xacro:sensor_d435> -->
+    <joint name="base_link_to_camera" type="fixed">
+	    <axis xyz="0 0 0" />
+      <origin xyz="0.53 -0.24 0.30" rpy="0 0.035 0.040"/>
+      <parent link="base_link" />
+     <child link="camera_base" />
+    </joint>
 
       <!--xacro:sensor_d455 parent="camera_base_rod" name="camera1">
         <origin xyz="0.60 -0.34 -0.50" rpy="0 -0.01 0"/>
