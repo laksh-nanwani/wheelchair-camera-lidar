@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-from livox_ros_driver.msg import CustomMsg
+from livox_ros_driver2.msg import CustomMsg
 from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs import point_cloud2
 

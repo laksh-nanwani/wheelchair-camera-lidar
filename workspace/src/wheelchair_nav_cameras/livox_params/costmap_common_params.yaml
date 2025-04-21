@@ -6,17 +6,17 @@ robot_base_frame: chassis
 transform_tolerance: 1.0
 
 obstacle_layer:
- observation_sources: scan_front
- scan_front:
-   data_type: LaserScan
-   topic: /livox/scan
-  #  topic: scan_filtered
-   marking: true
-   clearing: true 
-   min_obstacle_height: -2.0 
-   max_obstacle_height: 2.0 
-   obstacle_range: 5.0
-   raytrace_range: 3.8
+ observation_sources: pcd_obstacle_layer
+#  scan_front:
+#    data_type: LaserScan
+#    topic: /livox/scan
+#   #  topic: scan_filtered
+#    marking: true
+#    clearing: true 
+#    min_obstacle_height: -2.0 
+#    max_obstacle_height: 2.0 
+#    obstacle_range: 5.0
+#    raytrace_range: 3.8
 
 pcd_obstacle_layer:
   enabled:               true
