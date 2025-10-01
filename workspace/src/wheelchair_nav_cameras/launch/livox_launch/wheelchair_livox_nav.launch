@@ -3,10 +3,13 @@
   <arg default="$(find wheelchair_mapping)/maps/fast_lio/lab_map_with_outside_corridor.yaml" name="map_file" />
   <arg default="$(find fast_lio_localization)/PCD/lab_map_with_outside_corridor.pcd" name="pcd_path" />
   <arg default="true" name="open_rviz" />
-  <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic_raw" />
+  <!-- <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic_raw" /> -->
   <arg default="wheelchair_diff/cmd_vel" name="cmd_vel_topic" />
   <arg default="/localization" name="odom_topic" />
   <arg default="$(find xacro)/xacro --inorder '$(find wheelchair_description)/urdf/wheelchair_real_livox.xacro'" name="urdf_file" />
+  <arg name="odom_frame_id"   default="camera_init"/>
+  <arg name="base_frame_id"   default="chassis"/>
+  <arg name="global_frame_id" default="map_grid"/>
   
   <!-- <param command="$(arg urdf_file)" name="robot_description" /> -->
 
@@ -31,8 +34,14 @@
     <rosparam command="load" file="$(find wheelchair_nav_cameras)/livox_params/move_base_params.yaml" />
     <rosparam command="load" file="$(find wheelchair_nav_cameras)/livox_params/dwb_local_planner_params_voronoi.yaml" />
     <rosparam command="load" file="$(find wheelchair_nav_cameras)/livox_params/global_planner_params_voronoi.yaml" />
-    <remap from="cmd_vel" to="$(arg cmd_vel_topic_raw)" />
-    <remap from="odom" to="$(arg odom_topic)" />
+    <param name="global_costmap/global_frame" value="$(arg global_frame_id)"/>
+    <param name="global_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="local_costmap/global_frame" value="$(arg odom_frame_id)"/>
+    <param name="local_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="DWAPlannerROS/global_frame_id" value="$(arg odom_frame_id)"/>
+
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
   </node>
 
   <!-- <node name="goal_stopper" pkg="wheelchair_nav_cameras" type="goal_stopping.py"/> -->

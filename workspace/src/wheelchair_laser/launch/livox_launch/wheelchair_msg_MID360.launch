@@ -38,6 +38,10 @@
 
 	<node if="$(arg inverted)" name="invert_scan" pkg="wheelchair_laser" type="invert_livox_scan.py" output="screen"/>
 
+	<!-- <node name="laser_to_pcd" pkg="wheelchair_laser" type="laser_to_pcd.py" output="screen"/> -->
+	
+	<!-- <node name="remove_fov" pkg="wheelchair_laser" type="remove_fov.py" output="screen"/> -->
+
 	<group if="$(arg rosbag_enable)">
     	<node pkg="rosbag" type="record" name="record" output="screen"
           		args="-a"/>

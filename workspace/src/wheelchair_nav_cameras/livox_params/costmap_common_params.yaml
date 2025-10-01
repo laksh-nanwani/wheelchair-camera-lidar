@@ -29,7 +29,7 @@ pcd_obstacle_layer:
   mark_threshold:        0      #voxel height
   update_footprint_enabled: true
   combination_method:    1      #1=max, 0=override
-  obstacle_range:        5.0    #meters
+  obstacle_range:        7.0    #meters
   origin_z:              0.0    #meters
   publish_voxel_map:     true   # default off
   transform_tolerance:   0.2    # seconds
@@ -56,7 +56,7 @@ pcd_obstacle_layer:
     marking: false
     clearing: true
     min_z: 0.5                    #default 0, meters
-    max_z: 6.0                   #default 10, meters
+    max_z: 7.0                   #default 10, meters
     vertical_fov_angle: 1.04     #default 0.7, radians
     # vertical_fov_padding: 0
     horizontal_fov_angle: 6.29   #default 1.04, radians
@@ -64,6 +64,6 @@ pcd_obstacle_layer:
     model_type: 1                #default 0 (depth camera). Use 1 for 3D Lidar
 
 # Footprint
-footprint: [[-0.375,-0.3], [0.725,-0.3], [0.725,0.3], [-0.375,0.3]]
-# footprint: [[-0.375,-0.3], [0.375,-0.3], [0.375,0.3], [-0.375,0.3]]
-footprint_padding: 0.05
+# footprint: [[-0.375,-0.3], [0.725,-0.3], [0.725,0.3], [-0.375,0.3]]
+footprint: [[-0.375,-0.3], [0.375,-0.3], [0.375,0.3], [-0.375,0.3]]
+footprint_padding: 0.1

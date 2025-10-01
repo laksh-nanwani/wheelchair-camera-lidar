@@ -10,7 +10,7 @@ class Livox_Laser_to_Pointcloud:
     def __init__(self) -> None:
         xfer_format = rospy.get_param("/xfer_format", default=0)
 
-        if xfer_format == 0:
+        if xfer_format == 0 or xfer_format == 2:
             self.pub_scan = rospy.Publisher("/livox/lidar", PointCloud2, queue_size=10)
             self.sub_scan = rospy.Subscriber("/livox/inverted_lidar", PointCloud2, self.pointcloud2_callback)
 

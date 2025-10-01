@@ -3,7 +3,7 @@
 local_costmap:
 
   #Set the global and robot frames for the costmap
-  global_frame: map_grid
+  global_frame: map
   robot_base_frame: chassis
 
   #Set the update and publish frequency of the costmap
@@ -33,9 +33,9 @@ local_costmap:
   plugins:
 #     - {name: social_navigation_layers, type: "social_navigation_layers::PassingLayer"}
 #     - {name: costmap_prohibition_layer, type: "costmap_prohibition_layer_namespace::CostmapProhibitionLayer"}
-    #  - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
+     - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
 #    - {name: range_sensor_layer,   type: "range_sensor_layer::RangeSensorLayer"}
-     - {name: pcd_obstacle_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
+    #  - {name: pcd_obstacle_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
      - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
 
 

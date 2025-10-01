@@ -1,6 +1,6 @@
 global_costmap:
   # Frame
-  global_frame: map_grid
+  global_frame: map
   robot_base_frame: chassis
 
   # Update Frequency
@@ -29,7 +29,7 @@ global_costmap:
     #  - {name: costmap_prohibition_layer, type: "costmap_prohibition_layer_namespace::CostmapProhibitionLayer"}
     #  - {name: grid_layer, type: "simple_layer_namespace::GridLayer"}
     #  - {name: robot_cost_layer, type: "simple_layer_namespace::RobotCostLayer"}
-    #  - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
-     - {name: pcd_obstacle_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
+     - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
+    #  - {name: pcd_obstacle_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
 #    - {name: range_sensor_layer,   type: "range_sensor_layer::RangeSensorLayer"}
      - {name: inflation_layer, type: "costmap_2d::InflationLayer"}

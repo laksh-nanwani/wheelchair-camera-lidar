@@ -33,8 +33,8 @@ conservative_reset:
   force_updating: true
   reset_distance: 3.0        # clear obstacles farther away than 3.0 m
   # layer_names: ["pcd_obstacle_layer"] # ["obstacle_layer"]
-  layer_names: ["pcd_obstacle_layer"]
+  layer_names: ["scan_front"]
 aggressive_reset:
   force_updating: true
   reset_distance: 3.0        # clear obstacles farther away than 3.0 m
-  layer_names: ["pcd_obstacle_layer"]
+  layer_names: ["scan_front"]

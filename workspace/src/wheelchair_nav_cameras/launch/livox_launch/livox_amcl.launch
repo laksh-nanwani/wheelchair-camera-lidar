@@ -13,27 +13,22 @@
     <param name="publish_frequency" type="double" value="50.0" />
   </node>
 
-  <node args="$(arg map_file)" name="map_server" pkg="map_server" type="map_server">
-    <param name="frame_id" value="map_grid"/>
-  </node>
-  
-  <include file="$(find fast_lio_localization)/launch/localization_mid360.launch">
-    <arg name="map" value="$(arg pcd_path)"/>
-    <arg name="rviz" value="false"/>
-    <arg name="pcd_map_topic" value="/pcd_map"/>
-  </include>
+  <node args="$(arg map_file)" name="map_server" pkg="map_server" type="map_server"/>
 
   <group if="$(arg open_rviz)">
-    <node args="-d $(find wheelchair_nav_cameras)/rviz/livox_nav.rviz" name="rviz" pkg="rviz" required="true" type="rviz" />
+    <node args="-d $(find wheelchair_nav_cameras)/rviz/livox_amcl_nav.rviz" name="rviz" pkg="rviz" required="true" type="rviz" />
   </group>
-
-  <node name="body_to_base_static_tf_publisher" pkg="tf2_ros" type="static_transform_publisher" args="-0.04 0.002 -1.310 0.001 0 0 1.0 body base_link"/>
   
-  <node name="pcd_to_grid_tf" pkg="tf2_ros" type="static_transform_publisher" args="0 0 -1.3 0 0 0 1.0 map map_grid"/>
-
   <node name="livox_customMsg_to_pcd" pkg="wheelchair_laser" type="laser_to_pcd.py"/>
 
-  <!-- <include file="$(find wheelchair_laser)/launch/livox_launch/pcd_to_laserscan.launch"/> -->
+  <include file="$(find wheelchair_laser)/launch/livox_launch/pcd_to_laserscan.launch"/>
 
+  <include file="$(find wheelchair_nav_cameras)/launch/amcl_kanishk.launch">
+    <arg name="scan_topic" value="/livox/scan"/>
+  </include>
+
+  <!-- <include file="$(find kangaroo_driver)/launch/kangaroo_driver.launch">
+    <arg name="publish_odom" value="True"/>
+  </include> -->
 
 </launch>
