@@ -172,9 +172,6 @@ def region_growing_patchwork(
     """
     Converts a 3D point cloud to a 2D occupancy grid using a
     Region-Growing Patchwork method.
-
-    This method is robust to ramps, stairs, and disconnected surfaces
-    (like tables).
     """
 
     print("Starting Region-Growing Patchwork Occupancy Grid Generation...")
@@ -185,7 +182,7 @@ def region_growing_patchwork(
         print("Error: Empty point cloud.")
         return None, None, None, None, None
 
-    # --- 1. Define Grid Boundaries (ROS/Image convention) ---
+    # --- 1. Define Grid Boundaries ---
     x_min, y_min, _ = np.min(points, axis=0)
     x_max, y_max, _ = np.max(points, axis=0)
 
@@ -203,24 +200,24 @@ def region_growing_patchwork(
     # --- 2. Pass 1: Bin points into patches ---
     print(f"Pass 1: Binning {points.shape[0]} points into {patch_size}m patches...")
     patches = defaultdict(list)
-    point_to_patch_map = {}  # Store (px, py) for each point index
+    point_to_patch_map = {}
     for i in range(points.shape[0]):
         patch_x = int(np.floor(points[i, 0] / patch_size))
         patch_y = int(np.floor(points[i, 1] / patch_size))
         patch_coords = (patch_x, patch_y)
-        patches[patch_coords].append(i)  # Store point index
+        patches[patch_coords].append(i)
         point_to_patch_map[i] = patch_coords
 
-    # --- 3. Pass 2: Build Local Ground Model for ALL patches ---
-    # This creates the "graph" of all potential ground planes
+    # --- 3. Pass 2: Build Local Ground Model ---
     print(f"Pass 2: Building local ground model for {len(patches)} patches...")
-    ground_model = {}  # Stores (model_type, data)
+    ground_model = {}
     z_axis = np.array([0.0, 0.0, 1.0])
     max_angle_rad = np.deg2rad(max_ground_angle_deg)
 
     for patch_coords, indices in patches.items():
         patch_points = points[indices]
 
+        # Skip patches with too few points to form a reliable plane
         if patch_points.shape[0] < ransac_min_points:
             if patch_points.shape[0] > 0:
                 z_fallback = np.median(patch_points[:, 2])
@@ -239,32 +236,32 @@ def region_growing_patchwork(
             normal_norm = np.linalg.norm(normal)
             if normal_norm == 0:
                 continue
-
             normal = normal / normal_norm
+
             dot_product = abs(np.dot(normal, z_axis))
-            dot_product = min(1.0, dot_product)  # Clamp
+            dot_product = min(1.0, dot_product)
             angle_rad = np.arccos(dot_product)
 
             if abs(angle_rad) < max_angle_rad:
                 ground_model[patch_coords] = ("plane", plane_model)
             else:
+                # Steep patches (walls/railings) default to height model
                 z_fallback = np.median(patch_points[inliers, 2])
                 ground_model[patch_coords] = ("height", z_fallback)
 
-        except Exception as e:
+        except Exception:
             if patch_points.shape[0] > 0:
                 z_fallback = np.median(patch_points[:, 2])
                 ground_model[patch_coords] = ("height", z_fallback)
 
-    # --- 4. Pass 3: Region Growing (BFS) to find ONE connected ground ---
+    # --- 4. Pass 3: Region Growing (BFS) ---
     print("Pass 3: Performing region growing to find main ground...")
     main_ground_patches = set()
     visited_patches = set()
     queue = deque()
 
-    # Find the closest patch to the seed coordinates that has a model
+    # Seed finding logic
     if seed_patch_coords not in ground_model:
-        # Seed patch is empty, find the nearest one with a model
         min_dist = float("inf")
         best_seed = None
         for patch_coords in ground_model.keys():
@@ -272,45 +269,35 @@ def region_growing_patchwork(
             if dist < min_dist:
                 min_dist = dist
                 best_seed = patch_coords
-
         if best_seed:
             seed_patch_coords = best_seed
-            print(f"  Seed (0,0) empty. Starting growth from nearest patch: {seed_patch_coords}")
         else:
             print("Error: No valid patches found. Aborting.")
             return None, None, None, None, None
 
-    # Start the Breadth-First Search (BFS)
     queue.append(seed_patch_coords)
     visited_patches.add(seed_patch_coords)
     main_ground_patches.add(seed_patch_coords)
 
     max_angle_diff_rad = np.deg2rad(max_ground_angle_diff_deg)
-    neighbors_offsets = [(0, 1), (0, -1), (1, 0), (-1, 0)]  # 4-way neighbors
+    neighbors_offsets = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
     while queue:
         current_patch_coords = queue.popleft()
-
-        # Check if patch has a valid model, skip if not
         if current_patch_coords not in ground_model:
             continue
-
         current_model_tuple = ground_model[current_patch_coords]
 
         for dx, dy in neighbors_offsets:
             neighbor_patch_coords = (current_patch_coords[0] + dx, current_patch_coords[1] + dy)
-
             if neighbor_patch_coords in visited_patches:
                 continue
-
             visited_patches.add(neighbor_patch_coords)
-
             if neighbor_patch_coords not in ground_model:
-                continue  # This neighbor patch has no model
+                continue
 
             neighbor_model_tuple = ground_model[neighbor_patch_coords]
 
-            # Run your compatibility check!
             if are_patches_compatible(
                 current_model_tuple,
                 neighbor_model_tuple,
@@ -320,7 +307,6 @@ def region_growing_patchwork(
                 max_angle_diff_rad,
                 max_ground_height_diff,
             ):
-                # This neighbor is compatible! Add it to the ground.
                 main_ground_patches.add(neighbor_patch_coords)
                 queue.append(neighbor_patch_coords)
 
@@ -331,76 +317,63 @@ def region_growing_patchwork(
     obstacle_indices = []
     ground_indices = []
 
+    # Get seed ground height for global reference of "disconnected" obstacles
+    seed_model = ground_model[seed_patch_coords]
+
     for i in range(points.shape[0]):
         point = points[i]
         x, y, z = point
 
-        # --- START FIX: O(N) Classification ---
-        # This variable will track the status of the *current* point
         point_status = "ignored"
-        # --- END FIX ---
 
         patch_coords = point_to_patch_map.get(i)
         if patch_coords is None:
-            continue  # Should not happen, but as a safeguard
+            continue
 
         is_on_main_ground = patch_coords in main_ground_patches
 
         if is_on_main_ground:
-            # This point is on the connected ground. Classify it.
+            # --- CASE A: Connected Ground Patch ---
             model_tuple = ground_model[patch_coords]
             z_ground = get_z_from_model(model_tuple, x, y)
             z_relative = z - z_ground
 
-            # --- Classification ---
-            if ground_threshold <= z_relative < max_obstacle_height:
-                # OBSTACLE on top of the main ground
-                obstacle_indices.append(i)
-                point_status = "obstacle"  # <-- FIX
-            elif abs(z_relative) < ground_threshold:
-                # GROUND point
+            if abs(z_relative) < ground_threshold:
                 ground_indices.append(i)
-                point_status = "ground"  # <-- FIX
-            # else: Point is too high/low (ignored)
+                point_status = "ground"
+            # FIX: If it is ABOVE the ground model, it is an obstacle.
+            # We check < max_obstacle_height to avoid adding ceilings.
+            elif ground_threshold <= z_relative < max_obstacle_height:
+                obstacle_indices.append(i)
+                point_status = "obstacle"
 
         else:
-            # This point is NOT on the main ground (e.g., table, stair, wall).
-            # It's an OBSTACLE.
-
-            # Only add if it's within a reasonable height range
-            # to avoid adding ceilings etc.
-            # We need a ground-truth... let's just use the seed's ground
-            seed_model = ground_model[seed_patch_coords]
+            # --- CASE B: Disconnected / Steep Patch (The Railing Case) ---
             z_seed_ground = get_z_from_model(seed_model, x, y)
             z_relative_to_seed = z - z_seed_ground
 
-            if 0.0 < z_relative_to_seed < max_obstacle_height * 2.0:  # Generous range
+            # --- CRITICAL FIX IS HERE ---
+            # Old code: if 0.0 < z_relative_to_seed ... (Failed on downward slopes)
+            # New code: Allow negative values (e.g. -5.0m) so we capture railings
+            # that are physically lower than the start point.
+            if -5.0 < z_relative_to_seed < max_obstacle_height:
                 obstacle_indices.append(i)
-                point_status = "obstacle"  # <-- FIX
+                point_status = "obstacle"
 
-        # --- START FIX: O(N) Grid Update ---
-        # This check is now O(1) instead of O(N)
-        # We only project points that are classified as ground or obstacle
-
+        # --- Grid Update ---
         if point_status != "ignored":
-            # Project to 2D occupancy grid
             grid_c = int((x - x_min) / grid_resolution)
             grid_r = (grid_rows - 1) - int((y - y_min) / grid_resolution)
 
             if 0 <= grid_r < grid_rows and 0 <= grid_c < grid_cols:
                 if point_status == "obstacle":
-                    occupancy_grid[grid_r, grid_c] = 1.0  # Mark as occupied
-
+                    occupancy_grid[grid_r, grid_c] = 1.0
                 elif point_status == "ground":
-                    # Only mark as 'free' (0.0) if not already 'occupied' (1.0)
                     if occupancy_grid[grid_r, grid_c] != 1.0:
                         occupancy_grid[grid_r, grid_c] = 0.0
-        # --- END FIX ---
 
     # --- 6. Create final outputs ---
     print("Finalizing outputs...")
-    # We can't use the 'points' array directly if it was modified
-    # Re-build from the original 'points' array
     obstacle_points = np.asarray(pcd.points)[obstacle_indices]
     ground_points = np.asarray(pcd.points)[ground_indices]
 
