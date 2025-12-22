@@ -2,161 +2,137 @@ import open3d as o3d
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from collections import defaultdict, deque
+from collections import deque
 import sys
 import os
 import yaml
 from matplotlib.pyplot import imsave
 from scipy import ndimage
 
+# --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+# --- 1. FILTERING UTILITIES ---
+# --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
 
 def filter_by_voxel_density(pcd, voxel_size, min_points_per_voxel):
     """
-    Removes sparse points (like 'ghost' trails) from a point cloud.
-    (FASTER, VECTORIZED VERSION)
+    Removes sparse points (ghost trails) using 1D Voxel Hashing.
+    (Optimized for speed: uses 1D arithmetic instead of 3D row sorting)
     """
-    print("Starting Voxel Density Filter ...")
-    print(f"  Voxel Size: {voxel_size}m")
-    print(f"  Min Points per Voxel: {min_points_per_voxel}")
-
+    print("Starting Voxel Density Filter (Fast)...")
     start_time = time.time()
 
-    # 1. Get points and find voxel index for each point
     points = np.asarray(pcd.points)
     if points.shape[0] == 0:
-        print("  ...Voxel filter done. Empty cloud.")
         return pcd
 
+    # 1. Calculate Grid Indices (Int64 to prevent overflow)
     points_min = points.min(axis=0)
+    voxel_indices = np.floor((points - points_min) / voxel_size).astype(np.int64)
 
-    # (N, 3) array of integer voxel coordinates
-    voxel_indices = np.floor((points - points_min) / voxel_size).astype(int)
+    # 2. Flatten 3D indices to 1D (Hashing)
+    # This avoids the slow np.unique(axis=0) which sorts rows
+    max_idx = voxel_indices.max(axis=0) + 1
 
-    # 2. Use numpy to find unique voxels and count points in each
-    # This is *much* faster than a Python loop and dictionary
-    unique_voxels, point_indices_in_voxel, counts = np.unique(
-        voxel_indices, axis=0, return_inverse=True, return_counts=True
-    )
+    # Strides for flattening: x + y*dX + z*dX*dY
+    stride_x = 1
+    stride_y = max_idx[0]
+    stride_z = max_idx[0] * max_idx[1]
 
-    # 3. Find which unique voxels are "dense"
-    dense_voxel_indices = np.where(counts >= min_points_per_voxel)[0]
+    flat_indices = voxel_indices[:, 0] * stride_x + voxel_indices[:, 1] * stride_y + voxel_indices[:, 2] * stride_z
 
-    # 4. Find which *points* belong to these dense voxels
-    # `point_indices_in_voxel` maps each point to its `unique_voxels` index
-    # We create a mask for points whose index is in `dense_voxel_indices`
-    keep_mask = np.isin(point_indices_in_voxel, dense_voxel_indices)
+    # 3. Unique Count on 1D Array (Very Fast)
+    # We sort the flat indices to group identical voxels
+    sort_idx = np.argsort(flat_indices)
+    sorted_indices = flat_indices[sort_idx]
 
-    # 5. Get the indices of the points to keep
-    keep_indices = np.where(keep_mask)[0]
+    # Find where the voxel index changes
+    # 'flag' is True where the index changes
+    flag = np.concatenate(([True], sorted_indices[1:] != sorted_indices[:-1]))
 
-    # 6. Create a new point cloud with only the "dense" points
+    # Get unique counts
+    # This gives us the count for every unique voxel found
+    unique_counts = np.diff(np.nonzero(np.r_[flag, True])[0])
+
+    # 4. Filter
+    # Identifying which UNIQUE voxels are dense enough
+    dense_mask = unique_counts >= min_points_per_voxel
+
+    # Now we need to map this back to the original points.
+    # We expand the dense_mask back to the size of the sorted points
+    # 'flag' marks the start of each new voxel group. We can use repeat/cumsum tricks,
+    # but since we have the counts, we can simply repeat the mask.
+    points_keep_mask_sorted = np.repeat(dense_mask, unique_counts)
+
+    # Map back to original order using the inverse of sort_idx
+    # Creating an empty boolean mask
+    points_keep_mask = np.empty_like(points_keep_mask_sorted)
+    points_keep_mask[sort_idx] = points_keep_mask_sorted
+
+    keep_indices = np.where(points_keep_mask)[0]
+
     filtered_pcd = pcd.select_by_index(keep_indices)
 
-    end_time = time.time()
-    num_removed = len(points) - len(keep_indices)
-    print(f"  ...Voxel filter done in {end_time - start_time:.2f}s.")
-    print(f"  Removed {num_removed} sparse points ({num_removed / len(points) * 100:.1f}%).")
-
-    return filtered_pcd
-
-
-def filter_by_statistical_outlier(pcd, nb_neighbors, std_ratio):
-    """
-    Removes sparse outlier points (like 'ghost' trails) using
-    Statistical Outlier Removal (SOR).
-    ... (function contents unchanged) ...
-    """
-    print(f"\nStarting Statistical Outlier Removal...")
-    print(f"  nb_neighbors: {nb_neighbors}")
-    print(f"  std_ratio: {std_ratio}")
-    start_time = time.time()
-
-    # The function returns the downsampled_pcd and the indices
-    # We just need the pcd
-    filtered_pcd, inlier_indices = pcd.remove_statistical_outlier(nb_neighbors=nb_neighbors, std_ratio=std_ratio)
-
-    end_time = time.time()
-    num_original = len(np.asarray(pcd.points))
-    num_filtered = len(np.asarray(filtered_pcd.points))
-    num_removed = num_original - num_filtered
-
-    print(f"  ...SOR done in {end_time - start_time:.2f}s.")
-    print(f"  Removed {num_removed} outlier points ({num_removed / num_original * 100:.1f}%).")
+    dt = time.time() - start_time
+    removed = len(points) - len(keep_indices)
+    print(f"  ...Filter done in {dt:.3f}s. Removed {removed} points ({removed / len(points) * 100:.1f}%).")
 
     return filtered_pcd
 
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-# --- NEW REGION-GROWING PATCHWORK ALGORITHM ---
+# --- 2. FAST UTILITIES ---
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
 
-def get_z_from_model(model_tuple, x, y):
-    """Helper to get Z value for a given (x,y) from a patch model."""
-    model_type, model_data = model_tuple
-    if model_type == "plane":
-        a, b, c, d = model_data
-        if c == 0:
-            c = 1e-6  # Avoid division by zero
-        return -(a * x + b * y + d) / c
-    else:  # model_type == "height"
-        return model_data
-
-
-def are_patches_compatible(
-    model1_tuple,
-    model2_tuple,
-    patch_coords1,
-    patch_coords2,
-    patch_size,
-    max_angle_rad,
-    max_height_diff,
-):
+def get_z_from_plane_vectorized(plane_coeffs, x, y):
     """
-    Checks if two adjacent ground patches are compatible based on
-    your rules (angle and height).
+    Vectorized calculation of Z from plane equation.
+    plane_coeffs: (N, 4)
+    x, y: (N,)
     """
-    model1_type, model1_data = model1_tuple
-    model2_type, model2_data = model2_tuple
-
-    # 1. Angle Check (Your 6-degree rule)
-    # Only check angles if both are planes
-    if model1_type == "plane" and model2_type == "plane":
-        normal1 = model1_data[:3]
-        normal2 = model2_data[:3]
-
-        # Handle opposing normals
-        dot_product = abs(np.dot(normal1, normal2))
-        # Clamp to 1.0 to avoid precision errors with arccos
-        dot_product = min(1.0, dot_product)
-
-        angle_rad = np.arccos(dot_product)
-        if angle_rad > max_angle_rad:
-            return False  # Angle difference is too large
-
-    # 2. Height Check (Your 10cm rule)
-    # Check height at the midpoint of their shared boundary
-    patch_center1_x = patch_coords1[0] * patch_size + patch_size / 2
-    patch_center1_y = patch_coords1[1] * patch_size + patch_size / 2
-
-    patch_center2_x = patch_coords2[0] * patch_size + patch_size / 2
-    patch_center2_y = patch_coords2[1] * patch_size + patch_size / 2
-
-    # Midpoint of the boundary between the two patches
-    boundary_x = (patch_center1_x + patch_center2_x) / 2
-    boundary_y = (patch_center1_y + patch_center2_y) / 2
-
-    z1_at_boundary = get_z_from_model(model1_tuple, boundary_x, boundary_y)
-    z2_at_boundary = get_z_from_model(model2_tuple, boundary_x, boundary_y)
-
-    if abs(z1_at_boundary - z2_at_boundary) > max_height_diff:
-        return False  # Height jump is too large (e.g., table, stair)
-
-    # If both checks pass
-    return True
+    a, b, c, d = plane_coeffs[:, 0], plane_coeffs[:, 1], plane_coeffs[:, 2], plane_coeffs[:, 3]
+    # Avoid div/0 with small epsilon
+    c = np.where(np.abs(c) < 1e-6, 1e-6, c)
+    return -(a * x + b * y + d) / c
 
 
-def region_growing_patchwork(
+def check_compatibility_vectorized(curr_data, nbr_data, curr_idx, nbr_idx, patch_size, max_angle, max_h_diff):
+    """
+    Fast check between two patches using array data.
+    """
+    # Unpack
+    c_type, c_plane, c_z = curr_data
+    n_type, n_plane, n_z = nbr_data
+
+    # 1. Angle Check (Only if both are planes) (Type 1 = Plane)
+    if c_type == 1 and n_type == 1:
+        dot = abs(np.dot(c_plane[:3], n_plane[:3]))
+        angle = np.arccos(min(1.0, dot))
+        if angle > max_angle:
+            return False
+
+    # 2. Height Check at Boundary
+    # Patch Centers
+    cx, cy = (curr_idx * patch_size) + (patch_size / 2)
+    nx, ny = (nbr_idx * patch_size) + (patch_size / 2)
+
+    # Midpoint
+    mx, my = (cx + nx) / 2, (cy + ny) / 2
+
+    # Get Z at midpoint
+    z1 = -(c_plane[0] * mx + c_plane[1] * my + c_plane[3]) / c_plane[2] if c_type == 1 else c_z
+    z2 = -(n_plane[0] * mx + n_plane[1] * my + n_plane[3]) / n_plane[2] if n_type == 1 else n_z
+
+    return abs(z1 - z2) < max_h_diff
+
+
+# --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+# --- 3. OPTIMIZED REGION GROWING ---
+# --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+def region_growing_patchwork_optimized(
     pcd,
     patch_size=1.0,
     grid_resolution=0.1,
@@ -164,409 +140,330 @@ def region_growing_patchwork(
     max_obstacle_height=2.0,
     ransac_dist_threshold=0.1,
     ransac_min_points=30,
-    max_ground_angle_deg=30.0,
-    max_ground_angle_diff_deg=6.0,
-    max_ground_height_diff=0.1,
+    max_ground_angle_deg=15.0,
+    max_ground_angle_diff_deg=15.0,
+    max_ground_height_diff=0.15,
     seed_patch_coords=(0, 0),
+    rescue_disconnected_ground=True,
 ):
-    """
-    Converts a 3D point cloud to a 2D occupancy grid using a
-    Region-Growing Patchwork method.
-    """
-
-    print("Starting Region-Growing Patchwork Occupancy Grid Generation...")
+    print("\nStarting Optimized Region Growing...")
     start_time = time.time()
 
     points = np.asarray(pcd.points)
     if points.shape[0] == 0:
-        print("Error: Empty point cloud.")
         return None, None, None, None, None
 
-    # --- 1. Define Grid Boundaries ---
+    # --- 1. Grid Initialization (Vectorized) ---
     x_min, y_min, _ = np.min(points, axis=0)
     x_max, y_max, _ = np.max(points, axis=0)
 
     grid_cols = int((x_max - x_min) / grid_resolution) + 1
     grid_rows = int((y_max - y_min) / grid_resolution) + 1
-    grid_shape = (grid_rows, grid_cols)
-    grid_origin_xy = (x_min, y_min)
 
-    if grid_rows == 0 or grid_cols == 0:
-        print("Error: Invalid grid dimensions.")
-        return None, None, None, None, None
+    # Patch indices
+    patch_idx_x = np.floor((points[:, 0]) / patch_size).astype(int)
+    patch_idx_y = np.floor((points[:, 1]) / patch_size).astype(int)
 
-    occupancy_grid = np.full(grid_shape, 0.5, dtype=np.float32)
+    min_px, min_py = patch_idx_x.min(), patch_idx_y.min()
+    max_px, max_py = patch_idx_x.max(), patch_idx_y.max()
 
-    # --- 2. Pass 1: Bin points into patches ---
-    print(f"Pass 1: Binning {points.shape[0]} points into {patch_size}m patches...")
-    patches = defaultdict(list)
-    point_to_patch_map = {}
-    for i in range(points.shape[0]):
-        patch_x = int(np.floor(points[i, 0] / patch_size))
-        patch_y = int(np.floor(points[i, 1] / patch_size))
-        patch_coords = (patch_x, patch_y)
-        patches[patch_coords].append(i)
-        point_to_patch_map[i] = patch_coords
+    p_rows = max_py - min_py + 1
+    p_cols = max_px - min_px + 1
 
-    # --- 3. Pass 2: Build Local Ground Model ---
-    print(f"Pass 2: Building local ground model for {len(patches)} patches...")
-    ground_model = {}
-    z_axis = np.array([0.0, 0.0, 1.0])
+    grid_type = np.zeros((p_rows, p_cols), dtype=int)
+    grid_plane = np.zeros((p_rows, p_cols, 4), dtype=float)
+    grid_height = np.zeros((p_rows, p_cols), dtype=float)
+    grid_valid = np.zeros((p_rows, p_cols), dtype=bool)
+
+    # Shift indices to 0-based
+    shifted_px = patch_idx_x - min_px
+    shifted_py = patch_idx_y - min_py
+
+    z_axis = np.array([0, 0, 1.0])
     max_angle_rad = np.deg2rad(max_ground_angle_deg)
 
-    for patch_coords, indices in patches.items():
-        patch_points = points[indices]
+    # Sort points to group them by patch
+    sort_idx = np.lexsort((shifted_px, shifted_py))
+    sorted_points = points[sort_idx]
+    sorted_px = shifted_px[sort_idx]
+    sorted_py = shifted_py[sort_idx]
 
-        # Skip patches with too few points to form a reliable plane
-        if patch_points.shape[0] < ransac_min_points:
-            if patch_points.shape[0] > 0:
-                z_fallback = np.median(patch_points[:, 2])
-                ground_model[patch_coords] = ("height", z_fallback)
+    diff_mask = (sorted_px[1:] != sorted_px[:-1]) | (sorted_py[1:] != sorted_py[:-1])
+    split_indices = np.flatnonzero(diff_mask) + 1
+    patch_groups = np.split(sorted_points, split_indices)
+
+    # coords stores [px, py] pairs
+    patch_coords = np.split(np.column_stack((sorted_px, sorted_py)), split_indices)
+
+    print(f"  Modeling {len(patch_groups)} patches...")
+
+    # Modeling Loop
+    for group, coords in zip(patch_groups, patch_coords):
+        if len(group) < 1:
             continue
 
-        patch_pcd = o3d.geometry.PointCloud()
-        patch_pcd.points = o3d.utility.Vector3dVector(patch_points)
+        # --- FIX IS HERE: Correct Unpacking ---
+        px, py = coords[0]  # Was 'py, px', causing X/Y swap
 
+        if len(group) < ransac_min_points:
+            grid_type[py, px] = 2
+            grid_height[py, px] = np.mean(group[:, 2])
+            grid_valid[py, px] = True
+            continue
+
+        pcd_tmp = o3d.geometry.PointCloud()
+        pcd_tmp.points = o3d.utility.Vector3dVector(group)
         try:
-            plane_model, inliers = patch_pcd.segment_plane(
-                distance_threshold=ransac_dist_threshold, ransac_n=3, num_iterations=100
-            )
+            plane, _ = pcd_tmp.segment_plane(ransac_dist_threshold, 3, 50)
+            normal = plane[:3] / np.linalg.norm(plane[:3])
+            angle = np.arccos(min(1.0, abs(np.dot(normal, z_axis))))
 
-            normal = plane_model[:3]
-            normal_norm = np.linalg.norm(normal)
-            if normal_norm == 0:
-                continue
-            normal = normal / normal_norm
-
-            dot_product = abs(np.dot(normal, z_axis))
-            dot_product = min(1.0, dot_product)
-            angle_rad = np.arccos(dot_product)
-
-            if abs(angle_rad) < max_angle_rad:
-                ground_model[patch_coords] = ("plane", plane_model)
+            if angle < max_angle_rad:
+                grid_type[py, px] = 1
+                grid_plane[py, px] = plane
             else:
-                # Steep patches (walls/railings) default to height model
-                z_fallback = np.median(patch_points[inliers, 2])
-                ground_model[patch_coords] = ("height", z_fallback)
+                grid_type[py, px] = 2
+                grid_height[py, px] = np.median(group[:, 2])
+            grid_valid[py, px] = True
+        except:
+            pass
 
-        except Exception:
-            if patch_points.shape[0] > 0:
-                z_fallback = np.median(patch_points[:, 2])
-                ground_model[patch_coords] = ("height", z_fallback)
+    # --- 2. Region Growing (Grid BFS) ---
+    print("  Growing regions...")
 
-    # --- 4. Pass 3: Region Growing (BFS) ---
-    print("Pass 3: Performing region growing to find main ground...")
-    main_ground_patches = set()
-    visited_patches = set()
-    queue = deque()
+    ground_mask_grid = np.zeros((p_rows, p_cols), dtype=bool)
+    visited_grid = np.zeros((p_rows, p_cols), dtype=bool)
 
-    # Seed finding logic
-    if seed_patch_coords not in ground_model:
-        min_dist = float("inf")
-        best_seed = None
-        for patch_coords in ground_model.keys():
-            dist = (patch_coords[0] - seed_patch_coords[0]) ** 2 + (patch_coords[1] - seed_patch_coords[1]) ** 2
-            if dist < min_dist:
-                min_dist = dist
-                best_seed = patch_coords
-        if best_seed:
-            seed_patch_coords = best_seed
-        else:
-            print("Error: No valid patches found. Aborting.")
+    seed_px, seed_py = seed_patch_coords[0] - min_px, seed_patch_coords[1] - min_py
+
+    # Seed Validation
+    if not (0 <= seed_px < p_cols and 0 <= seed_py < p_rows and grid_type[seed_py, seed_px] == 1):
+        best_z = float("inf")
+        found_seed = False
+        # Search radius 5 around seed
+        r_min, r_max = max(0, seed_py - 5), min(p_rows, seed_py + 6)
+        c_min, c_max = max(0, seed_px - 5), min(p_cols, seed_px + 6)
+
+        for r in range(r_min, r_max):
+            for c in range(c_min, c_max):
+                if grid_type[r, c] == 1:
+                    cx_world = (c + min_px) * patch_size + patch_size / 2
+                    cy_world = (r + min_py) * patch_size + patch_size / 2
+                    pl = grid_plane[r, c]
+                    z = -(pl[0] * cx_world + pl[1] * cy_world + pl[3]) / (pl[2] + 1e-6)
+                    if z < best_z:
+                        best_z = z
+                        seed_px, seed_py = c, r
+                        found_seed = True
+        if not found_seed:
+            print("  Warning: No valid seed found. Returning raw data.")
+            # Fallback to prevent crash: use first valid patch or empty
             return None, None, None, None, None
 
-    queue.append(seed_patch_coords)
-    visited_patches.add(seed_patch_coords)
-    main_ground_patches.add(seed_patch_coords)
+    queue = deque([(seed_px, seed_py)])
+    visited_grid[seed_py, seed_px] = True
+    ground_mask_grid[seed_py, seed_px] = True
 
-    max_angle_diff_rad = np.deg2rad(max_ground_angle_diff_deg)
-    neighbors_offsets = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+    neighbors = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
+    max_angle_diff = np.deg2rad(max_ground_angle_diff_deg)
 
     while queue:
-        current_patch_coords = queue.popleft()
-        if current_patch_coords not in ground_model:
-            continue
-        current_model_tuple = ground_model[current_patch_coords]
+        cx, cy = queue.popleft()
 
-        for dx, dy in neighbors_offsets:
-            neighbor_patch_coords = (current_patch_coords[0] + dx, current_patch_coords[1] + dy)
-            if neighbor_patch_coords in visited_patches:
-                continue
-            visited_patches.add(neighbor_patch_coords)
-            if neighbor_patch_coords not in ground_model:
-                continue
+        c_data = (grid_type[cy, cx], grid_plane[cy, cx], grid_height[cy, cx])
+        c_idx = np.array([cx + min_px, cy + min_py])
 
-            neighbor_model_tuple = ground_model[neighbor_patch_coords]
+        for dx, dy in neighbors:
+            nx, ny = cx + dx, cy + dy
 
-            if are_patches_compatible(
-                current_model_tuple,
-                neighbor_model_tuple,
-                current_patch_coords,
-                neighbor_patch_coords,
-                patch_size,
-                max_angle_diff_rad,
-                max_ground_height_diff,
-            ):
-                main_ground_patches.add(neighbor_patch_coords)
-                queue.append(neighbor_patch_coords)
+            if 0 <= nx < p_cols and 0 <= ny < p_rows:
+                if visited_grid[ny, nx] or not grid_valid[ny, nx]:
+                    continue
 
-    print(f"  Found {len(main_ground_patches)} connected ground patches.")
+                n_data = (grid_type[ny, nx], grid_plane[ny, nx], grid_height[ny, nx])
+                n_idx = np.array([nx + min_px, ny + min_py])
 
-    # --- 5. Pass 4: Classify all points and build occupancy grid ---
-    print("Pass 4: Classifying points and building grid...")
-    obstacle_indices = []
-    ground_indices = []
+                if check_compatibility_vectorized(
+                    c_data, n_data, c_idx, n_idx, patch_size, max_angle_diff, max_ground_height_diff
+                ):
+                    visited_grid[ny, nx] = True
+                    ground_mask_grid[ny, nx] = True
+                    queue.append((nx, ny))
 
-    # Get seed ground height for global reference of "disconnected" obstacles
-    seed_model = ground_model[seed_patch_coords]
+    # --- 3. Rescue Pass (Vectorized) ---
+    if rescue_disconnected_ground and np.any(ground_mask_grid):
+        print("  Rescuing disconnected patches...")
+        g_rows, g_cols = np.where(ground_mask_grid)
+        if len(g_rows) > 0:
+            gx = (g_cols + min_px) * patch_size + patch_size / 2
+            gy = (g_rows + min_py) * patch_size + patch_size / 2
 
-    for i in range(points.shape[0]):
-        point = points[i]
-        x, y, z = point
+            planes = grid_plane[g_rows, g_cols]
+            gz = -(planes[:, 0] * gx + planes[:, 1] * gy + planes[:, 3]) / (planes[:, 2] + 1e-6)
 
-        point_status = "ignored"
+            is_simple = grid_type[g_rows, g_cols] == 2
+            gz[is_simple] = grid_height[g_rows, g_cols][is_simple]
 
-        patch_coords = point_to_patch_map.get(i)
-        if patch_coords is None:
-            continue
+            avg_ground_z = np.mean(gz)
 
-        is_on_main_ground = patch_coords in main_ground_patches
+            # Candidates: Valid, Not Visited, Is Plane
+            candidate_mask = (grid_valid) & (~ground_mask_grid) & (grid_type == 1)
+            c_rows, c_cols = np.where(candidate_mask)
 
-        if is_on_main_ground:
-            # --- CASE A: Connected Ground Patch ---
-            model_tuple = ground_model[patch_coords]
-            z_ground = get_z_from_model(model_tuple, x, y)
-            z_relative = z - z_ground
+            if len(c_rows) > 0:
+                cx_world = (c_cols + min_px) * patch_size + patch_size / 2
+                cy_world = (c_rows + min_py) * patch_size + patch_size / 2
+                c_planes = grid_plane[c_rows, c_cols]
+                c_z = -(c_planes[:, 0] * cx_world + c_planes[:, 1] * cy_world + c_planes[:, 3]) / (
+                    c_planes[:, 2] + 1e-6
+                )
 
-            if abs(z_relative) < ground_threshold:
-                ground_indices.append(i)
-                point_status = "ground"
-            # FIX: If it is ABOVE the ground model, it is an obstacle.
-            # We check < max_obstacle_height to avoid adding ceilings.
-            elif ground_threshold <= z_relative < max_obstacle_height:
-                obstacle_indices.append(i)
-                point_status = "obstacle"
+                rescue_mask = np.abs(c_z - avg_ground_z) < 0.3
 
-        else:
-            # --- CASE B: Disconnected / Steep Patch (The Railing Case) ---
-            z_seed_ground = get_z_from_model(seed_model, x, y)
-            z_relative_to_seed = z - z_seed_ground
+                rescued_rows = c_rows[rescue_mask]
+                rescued_cols = c_cols[rescue_mask]
+                ground_mask_grid[rescued_rows, rescued_cols] = True
+                print(f"    Rescued {len(rescued_rows)} patches.")
 
-            # --- CRITICAL FIX IS HERE ---
-            # Old code: if 0.0 < z_relative_to_seed ... (Failed on downward slopes)
-            # New code: Allow negative values (e.g. -5.0m) so we capture railings
-            # that are physically lower than the start point.
-            if -5.0 < z_relative_to_seed < max_obstacle_height:
-                obstacle_indices.append(i)
-                point_status = "obstacle"
+    # --- 4. Point Classification (Vectorized) ---
+    print("  Classifying points...")
+    valid_points_mask = (shifted_px >= 0) & (shifted_px < p_cols) & (shifted_py >= 0) & (shifted_py < p_rows)
 
-        # --- Grid Update ---
-        if point_status != "ignored":
-            grid_c = int((x - x_min) / grid_resolution)
-            grid_r = (grid_rows - 1) - int((y - y_min) / grid_resolution)
+    p_x = shifted_px[valid_points_mask]
+    p_y = shifted_py[valid_points_mask]
+    points_valid = points[valid_points_mask]
 
-            if 0 <= grid_r < grid_rows and 0 <= grid_c < grid_cols:
-                if point_status == "obstacle":
-                    occupancy_grid[grid_r, grid_c] = 1.0
-                elif point_status == "ground":
-                    if occupancy_grid[grid_r, grid_c] != 1.0:
-                        occupancy_grid[grid_r, grid_c] = 0.0
+    point_in_ground_patch = ground_mask_grid[p_y, p_x]
 
-    # --- 6. Create final outputs ---
-    print("Finalizing outputs...")
-    obstacle_points = np.asarray(pcd.points)[obstacle_indices]
-    ground_points = np.asarray(pcd.points)[ground_indices]
+    p_planes = grid_plane[p_y, p_x]
+    p_heights = grid_height[p_y, p_x]
+    p_types = grid_type[p_y, p_x]
 
-    obstacle_pcd = o3d.geometry.PointCloud()
-    obstacle_pcd.points = o3d.utility.Vector3dVector(obstacle_points)
-    obstacle_pcd.paint_uniform_color([1.0, 0, 0])  # Red
+    p_plane_z = get_z_from_plane_vectorized(p_planes, points_valid[:, 0], points_valid[:, 1])
+    ref_z = np.where(p_types == 1, p_plane_z, p_heights)
 
-    ground_pcd = o3d.geometry.PointCloud()
-    ground_pcd.points = o3d.utility.Vector3dVector(ground_points)
-    ground_pcd.paint_uniform_color([0, 0.6, 0.2])  # Green
+    # Fallback for non-ground points
+    if "avg_ground_z" in locals():
+        ref_z[~point_in_ground_patch] = avg_ground_z
+    else:
+        ref_z[~point_in_ground_patch] = 0.0
 
-    end_time = time.time()
-    print(f"Done. Total time: {end_time - start_time:.2f}s")
+    z_diff = points_valid[:, 2] - ref_z
 
-    return occupancy_grid, obstacle_pcd, ground_pcd, grid_origin_xy, grid_shape
+    is_ground = point_in_ground_patch & (np.abs(z_diff) < ground_threshold)
+    is_obstacle = (~is_ground) & (z_diff < max_obstacle_height) & (z_diff > -5.0)
+    is_obstacle = is_obstacle & (z_diff > ground_threshold)
+
+    # --- 5. Generate Occupancy Grid ---
+    print("  Generating Grid...")
+    occ_grid = np.full((grid_rows, grid_cols), 0.5, dtype=np.float32)
+
+    gx = ((points_valid[:, 0] - x_min) / grid_resolution).astype(int)
+    gy = ((points_valid[:, 1] - y_min) / grid_resolution).astype(int)
+
+    gy = (grid_rows - 1) - gy  # Invert Y for image
+
+    g_mask = (gx >= 0) & (gx < grid_cols) & (gy >= 0) & (gy < grid_rows)
+
+    gx = gx[g_mask]
+    gy = gy[g_mask]
+    is_obs_masked = is_obstacle[g_mask]
+    is_gnd_masked = is_ground[g_mask]
+
+    # Prioritize Obstacles
+    occ_grid[gy[is_gnd_masked], gx[is_gnd_masked]] = 0.0
+    occ_grid[gy[is_obs_masked], gx[is_obs_masked]] = 1.0
+
+    # Output PCDs
+    obs_indices = np.where(valid_points_mask)[0][is_obstacle]
+    gnd_indices = np.where(valid_points_mask)[0][is_ground]
+
+    obs_pcd = o3d.geometry.PointCloud()
+    if len(obs_indices) > 0:
+        obs_pcd.points = o3d.utility.Vector3dVector(points[obs_indices])
+        obs_pcd.paint_uniform_color([1, 0, 0])
+
+    gnd_pcd = o3d.geometry.PointCloud()
+    if len(gnd_indices) > 0:
+        gnd_pcd.points = o3d.utility.Vector3dVector(points[gnd_indices])
+        gnd_pcd.paint_uniform_color([0, 0.6, 0.2])
+
+    print(f"Done. Total time: {time.time() - start_time:.2f}s")
+    return occ_grid, obs_pcd, gnd_pcd, (x_min, y_min), (grid_rows, grid_cols)
 
 
-def save_occupancy(grid, res, out_path, map_name, origin):
-    """
-    Saves the occupancy grid as a PNG image.
-    ... (function contents unchanged) ...
-    """
-    grid_ = ((1 - grid) * 255).astype(int)
-    x_min, y_min = origin
-
-    map_dict = {
-        "image": f"{map_name}.png",
-        "resolution": res,
-        "origin": [float(x_min), float(y_min), 0.0],
-        "occupied_thresh": 0.6,
-        "free_thresh": 0.3,
-        "negate": 0,
-    }
-
-    imsave(os.path.join(out_path, f"{map_name}.png"), grid_, cmap="gray")
-
-    with open(os.path.join(out_path, f"{map_name}.yaml"), "w") as file:
-        yaml.dump(map_dict, file, default_flow_style=None)
-
-    print("Saved map to", out_path)
+# --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+# --- MAIN ---
+# --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
 
 def smooth_free_space(grid, kernel_size=3):
-    """
-    Cleans up 'patchy' free space by filling holes (e.g., from sparse
-    LiDAR ground returns) using a morphological closing operation.
-    ... (function contents unchanged) ...
-    """
-    print(f"\nSmoothing free space by 'closing' gaps with {kernel_size}x{kernel_size} kernel...")
-
-    # 1. Find all obstacles. We will preserve these unconditionally.
-    obstacle_mask = grid == 1.0
-
-    # 2. Find all 'free' (0.0) areas. These are what we want to "grow"
-    #    to fill the 'unknown' gaps.
+    obs_mask = grid == 1.0
     free_mask = grid == 0.0
-
-    # 3. Create the filter kernel
-    structure = np.ones((kernel_size, kernel_size))
-
-    # 4. Apply 'binary_closing' to the 'free' mask.
-    # This 'dilates' the free space (filling gaps) and then
-    # 'erodes' it back, effectively "bridging" nearby free regions.
-    filled_free_mask = ndimage.binary_closing(free_mask, structure=structure)
-
-    # 5. Reconstruct the grid
-    # Start with 0.5 (unknown) everywhere
-    smoothed_grid = np.full(grid.shape, 0.5, dtype=np.float32)
-
-    # Add back the new, 'filled' free mask
-    smoothed_grid[filled_free_mask] = 0.0
-
-    # Add back all obstacles (which always have priority)
-    smoothed_grid[obstacle_mask] = 1.0
-
-    print("...Smoothing done.")
-    return smoothed_grid
+    filled = ndimage.binary_closing(free_mask, structure=np.ones((kernel_size, kernel_size)))
+    smooth_grid = np.full(grid.shape, 0.5, dtype=np.float32)
+    smooth_grid[filled] = 0.0
+    smooth_grid[obs_mask] = 1.0
+    return smooth_grid
 
 
-# --- --- --- --- --- --- --- --- --- --- --- ---
-# --- DEMO: Load a real PCD file and test    ---
-# --- --- --- --- --- --- --- --- --- --- --- ---
+def save_occupancy(grid, res, out_path, map_name, origin):
+    img = np.full(grid.shape, 205, dtype=np.uint8)
+    img[grid == 0.0] = 254
+    img[grid == 1.0] = 0
+    full_path = os.path.join(out_path, f"{map_name}.png")
+    imsave(full_path, img, cmap="gray", vmin=0, vmax=255)
+
+    yaml_dict = {
+        "image": f"{map_name}.png",
+        "resolution": res,
+        "origin": [float(origin[0]), float(origin[1]), 0.0],
+        "occupied_thresh": 0.65,
+        "free_thresh": 0.196,
+        "negate": 0,
+    }
+    with open(os.path.join(out_path, f"{map_name}.yaml"), "w") as f:
+        yaml.dump(yaml_dict, f)
+    print(f"Saved to {full_path}")
+
 
 if __name__ == "__main__":
-    # --- 1. Load Point Cloud from file ---
-    pcd_name = "lab_and_himalaya"
-    pcd_path = f"/home/laksh/wheelchair-camera-lidar/workspace/src/FAST_LIO/PCD/{pcd_name}.pcd"
-    grid_path = "/home/laksh/wheelchair-camera-lidar/workspace/src/FAST_LIO/maps_region/"
+    PCD_FILE = "nexus_first_floor_with_stores"
+    INPUT_PATH = f"/home/laksh/wheelchair-camera-lidar/workspace/src/FAST_LIO/PCD/{PCD_FILE}.pcd"
+    OUTPUT_DIR = "/home/laksh/wheelchair-camera-lidar/workspace/src/FAST_LIO/maps_region_fast/"
 
-    print(f"Loading point cloud from {pcd_path}...")
-    try:
-        demo_pcd = o3d.io.read_point_cloud(pcd_path)
-        if not demo_pcd.has_points():
-            print(f"Error: Point cloud file is empty or could not be read: {pcd_path}")
-            sys.exit(1)
-    except Exception as e:
-        print(f"Error loading {pcd_path}: {e}")
+    print(f"Loading Point Cloud: {INPUT_PATH}")
+    pcd = o3d.io.read_point_cloud(INPUT_PATH)
+    if not pcd.has_points():
         sys.exit(1)
-    print(f"Successfully loaded {len(demo_pcd.points)} points.")
 
-    # --- --- --- --- --- --- --- --- --- --- --- ---
-    # --- NEW STEP 1.5: Pre-Downsample Point Cloud  ---
-    # --- --- --- --- --- --- --- --- --- --- --- ---
-    # This is the single biggest speedup.
-    # It reduces the number of points all other functions must process.
+    print(f"Loaded {pcd.points} points.")
 
-    # --- 2. Filter dynamic object trails ---
-    # Choose one of the filters below
+    filtered_pcd = filter_by_voxel_density(pcd, 0.1, 10)
 
-    # --- Option A: Voxel Density Filter ---
-    DENSITY_VOXEL_SIZE = 0.1
-    MIN_POINTS_PER_VOXEL = 10
-    filtered_pcd = filter_by_voxel_density(
-        demo_pcd,  # <-- IMPORTANT: Use the downsampled cloud
-        voxel_size=DENSITY_VOXEL_SIZE,
-        min_points_per_voxel=MIN_POINTS_PER_VOXEL,
-    )
+    # o3d.visualization.draw_geometries([pcd])
+    # o3d.visualization.draw_geometries([filtered_pcd])
 
-    # --- Option B: Statistical Outlier Removal ---
-    # SOR_NEIGHBORS = 30
-    # SOR_STD_RATIO = 2.0
-    # filtered_pcd = filter_by_statistical_outlier(
-    #     downsampled_pcd, # <-- IMPORTANT: Use the downsampled cloud
-    #     nb_neighbors=SOR_NEIGHBORS,
-    #     std_ratio=SOR_STD_RATIO
-    # )
-
-    # --- 3. Visualize Filter Step ---
-    print("\nVisualizing original vs. filtered (Press 'Q' to close)")
-    # Show the downsampled one for a fair comparison
-    o3d.visualization.draw_geometries([demo_pcd], window_name="Original")
-    o3d.visualization.draw_geometries([filtered_pcd], window_name="Filtered")
-
-    # --- 4. Run the Region-Growing Patchwork algorithm ---
-
-    # --- General Hyperparameters ---
-    PATCH_SIZE = 0.5  # 0.5m x 0.5m patches
-    GRID_RESOLUTION = 0.05  # 5cm grid cells
-    GROUND_THRESHOLD = 0.05  # 5cm tolerance for ground
-    MAX_OBSTACLE_HEIGHT = 1.5  # Ignore points > 1.5m above ground
-    RANSAC_DIST_THRESHOLD = 0.05  # 5cm RANSAC tolerance
-    RANSAC_MIN_POINTS = 30  # Min points in a patch for RANSAC
-    MAX_GROUND_ANGLE_DEG = 10  # Max angle for a plane to be "ground" (vs. a wall)
-
-    # --- NEW Region Growing Hyperparameters ---
-    # Your 6-degree rule for ramps
-    MAX_GROUND_ANGLE_DIFF_DEG = 6.0
-    # Your 10cm rule for stairs/tables
-    MAX_GROUND_HEIGHT_DIFF = 0.02
-    # Where to start growing from (patch coordinates)
-    SEED_PATCH_COORDS = (0, 0)
-
-    grid, obs_pcd, gnd_pcd, origin, shape = region_growing_patchwork(
+    grid, obs_pcd, gnd_pcd, origin, shape = region_growing_patchwork_optimized(
         filtered_pcd,
-        patch_size=PATCH_SIZE,
-        grid_resolution=GRID_RESOLUTION,
-        ground_threshold=GROUND_THRESHOLD,
-        max_obstacle_height=MAX_OBSTACLE_HEIGHT,
-        ransac_dist_threshold=RANSAC_DIST_THRESHOLD,
-        ransac_min_points=RANSAC_MIN_POINTS,
-        max_ground_angle_deg=MAX_GROUND_ANGLE_DEG,
-        max_ground_angle_diff_deg=MAX_GROUND_ANGLE_DIFF_DEG,
-        max_ground_height_diff=MAX_GROUND_HEIGHT_DIFF,
-        seed_patch_coords=SEED_PATCH_COORDS,
+        patch_size=0.5,
+        grid_resolution=0.05,
+        ground_threshold=0.05,
+        max_obstacle_height=1.6,
+        max_ground_angle_deg=6.0,
+        max_ground_angle_diff_deg=12.0,
+        max_ground_height_diff=0.05,
+        rescue_disconnected_ground=True,
     )
 
-    # --- 5. Visualize the 3D classified result ---
-    if obs_pcd and gnd_pcd:
-        print("\nVisualizing classified 3D points (Green=Ground, Red=Obstacle)...")
-        coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0)
-        o3d.visualization.draw_geometries(
-            [gnd_pcd, obs_pcd, coord_frame], window_name="Classified Points (Region Growing)"
-        )
-
-    # --- 6. Smooth and Save the 2D Occupancy Grid ---
     if grid is not None:
-        # Auto-calculate kernel size
-        gap_size_pixels = int(PATCH_SIZE / GRID_RESOLUTION)
-        SMOOTHING_KERNEL_SIZE = gap_size_pixels + 3
-        if SMOOTHING_KERNEL_SIZE % 2 == 0:
-            SMOOTHING_KERNEL_SIZE += 1
+        if not os.path.exists(OUTPUT_DIR):
+            os.makedirs(OUTPUT_DIR)
+        smooth_k = int(0.25 / 0.05) + 1
+        if smooth_k % 2 == 0:
+            smooth_k += 1
+        final_grid = smooth_free_space(grid, kernel_size=smooth_k)
+        save_occupancy(final_grid, 0.05, OUTPUT_DIR, PCD_FILE + "_fast", origin)
 
-        grid = smooth_free_space(grid, kernel_size=SMOOTHING_KERNEL_SIZE)
-
-        save_occupancy(grid, GRID_RESOLUTION, grid_path, pcd_name, origin)
-
-        print("\nVisualizing final 2D Occupancy Grid...")
-        plt.figure(figsize=(10, 10))
-        extent = [origin[0], origin[0] + shape[1] * GRID_RESOLUTION, origin[1], origin[1] + shape[0] * GRID_RESOLUTION]
-
-        plt.imshow(grid, cmap="gray_r", extent=extent, vmin=0.0, vmax=1.0)
-        plt.title(f"2D Occupancy Grid (Resolution: {GRID_RESOLUTION}m)")
-        plt.xlabel("X Coordinate (meters)")
-        plt.ylabel("Y Coordinate (meters)")
-        plt.gca().set_aspect("equal", adjustable="box")
-        plt.show()
+        # Visualization
+        o3d.visualization.draw_geometries([gnd_pcd, obs_pcd])
